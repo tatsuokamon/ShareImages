@@ -16,8 +16,8 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Comment::UserId).uuid().not_null())
                     .col(ColumnDef::new(Comment::Content).text().not_null())
                     .col(ColumnDef::new(Comment::DisplayName).text())
-                    .col(ColumnDef::new(Comment::CreatedAt).timestamp().not_null())
-                    .col(ColumnDef::new(Comment::DeletedAt).timestamp())
+                    .col(ColumnDef::new(Comment::CreatedAt).timestamp_with_time_zone().not_null())
+                    .col(ColumnDef::new(Comment::DeletedAt).timestamp_with_time_zone())
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-comments-roomid")

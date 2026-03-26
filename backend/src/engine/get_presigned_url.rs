@@ -6,12 +6,13 @@ use axum::{
 use bb8::RunError;
 use redis::RedisError;
 use serde::{Deserialize, Serialize};
+use sha2::Digest;
 use uuid::Uuid;
 
 use crate::{
-    engine::{EngineState, auth::AuthUser, check_if_he_can_take_action_in_room},
+    engine::{EngineState, auth::AuthUser},
     repository::{
-        RepositoryErr, add_valid_presigned_url, check_if_his_img_waits_enough, generate_object_key,
+        RepositoryErr, add_presigned_url_key, check_if_his_img_waits_enough, generate_object_key,
         generate_presigned_url,
     },
 };
@@ -33,6 +34,7 @@ pub enum GetURLErr {
 #[derive(Serialize)]
 pub struct GetURLResult {
     pub presigned_url: Option<String>,
+    pub key: Option<String>,
     pub success: bool,
 }
 
@@ -52,6 +54,7 @@ pub async fn get_presigned_url(
                 axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 Json(GetURLResult {
                     presigned_url: None,
+                    key: None,
                     success: false,
                 }),
             )
@@ -71,6 +74,7 @@ async fn _get_presigned_url_inner(
             axum::http::StatusCode::FORBIDDEN,
             GetURLResult {
                 presigned_url: None,
+                key: None,
                 success: false,
             },
         ));
@@ -81,6 +85,7 @@ async fn _get_presigned_url_inner(
             axum::http::StatusCode::TOO_MANY_REQUESTS,
             GetURLResult {
                 presigned_url: None,
+                key: None,
                 success: false,
             },
         ));
@@ -94,20 +99,20 @@ async fn _get_presigned_url_inner(
         state.expires_in,
     )
     .await?;
-    add_valid_presigned_url(
-        &mut conn,
-        &auth.user_id,
-        &presigned_url,
-        &obj_key,
-        state.expires_in,
-    )
-    .await?;
+
+    let key = gen_presigned_url_key(&presigned_url);
+    add_presigned_url_key(&mut conn, &auth.user_id, &key, &obj_key, state.expires_in).await?;
 
     Ok((
         axum::http::StatusCode::OK,
         GetURLResult {
             presigned_url: Some(presigned_url),
+            key: Some(key),
             success: true,
         },
     ))
+}
+
+fn gen_presigned_url_key(presigned_url: &str) -> String {
+    format!("{:x}", sha2::Sha256::digest(presigned_url.as_bytes()))
 }

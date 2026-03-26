@@ -14,8 +14,9 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Images::Id).primary_key().uuid())
                     .col(ColumnDef::new(Images::Title).text())
                     .col(ColumnDef::new(Images::Score).integer().not_null())
-                    .col(ColumnDef::new(Images::CreatedAt).timestamp().not_null())
-                    .col(ColumnDef::new(Images::DeletedAt).timestamp())
+                    .col(ColumnDef::new(Images::CreatedAt).timestamp_with_time_zone().not_null())
+                    .col(ColumnDef::new(Images::DeletedAt).timestamp_with_time_zone())
+                    .col(ColumnDef::new(Images::DisplayName).text())
                     .col(ColumnDef::new(Images::RoomId).uuid().not_null())
                     .col(ColumnDef::new(Images::UserId).uuid().not_null())
                     .col(ColumnDef::new(Images::ObjectKey).text().not_null())
@@ -62,6 +63,7 @@ pub enum Images {
 
     CreatedAt,
     DeletedAt,
+    DisplayName
 }
 
 #[derive(Iden)]

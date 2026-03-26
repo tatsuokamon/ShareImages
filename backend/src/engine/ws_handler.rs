@@ -5,9 +5,7 @@ use axum::{
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::{
-    engine::EngineState, repository::check_if_he_exists, ws::handle_socket
-};
+use crate::{engine::EngineState, repository::check_if_he_exists, ws::handle_socket};
 
 #[derive(Deserialize)]
 pub struct WsParams {
@@ -34,15 +32,11 @@ pub async fn ws_handler(
                 handle_socket(socket, q.room_id, q.user_id, &state.manager).await;
             });
             axum::http::StatusCode::OK
-        },
-        Ok(false) => {
-            axum::http::StatusCode::BAD_REQUEST
-        },
+        }
+        Ok(false) => axum::http::StatusCode::BAD_REQUEST,
         Err(e) => {
             tracing::error!("{e}");
             axum::http::StatusCode::INTERNAL_SERVER_ERROR
         }
     }
-
-
 }

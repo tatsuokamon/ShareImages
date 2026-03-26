@@ -14,7 +14,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(ImageVote::ImageId).uuid().not_null())
                     .col(ColumnDef::new(ImageVote::UserId).uuid().not_null())
                     .col(ColumnDef::new(ImageVote::IsGood).boolean().not_null())
-                    .col(ColumnDef::new(ImageVote::CreatedAt).timestamp().not_null())
+                    .col(ColumnDef::new(ImageVote::CreatedAt).timestamp_with_time_zone().not_null())
                     .primary_key(
                         Index::create()
                             .col(ImageVote::ImageId)
@@ -78,4 +78,5 @@ pub enum Images {
 
     CreatedAt,
     DeletedAt,
+    DisplayName
 }

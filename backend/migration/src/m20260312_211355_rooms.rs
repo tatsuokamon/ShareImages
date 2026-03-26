@@ -14,8 +14,8 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Room::Id).uuid().primary_key())
                     .col(ColumnDef::new(Room::Keyword).string().not_null())
                     .col(ColumnDef::new(Room::MasterId).uuid().not_null())
-                    .col(ColumnDef::new(Room::CreatedAt).timestamp().not_null())
-                    .col(ColumnDef::new(Room::DeletedAt).timestamp())
+                    .col(ColumnDef::new(Room::CreatedAt).timestamp_with_time_zone().not_null())
+                    .col(ColumnDef::new(Room::DeletedAt).timestamp_with_time_zone())
                     .to_owned(),
             )
             .await

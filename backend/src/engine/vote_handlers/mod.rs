@@ -1,4 +1,5 @@
 use axum::{
+    Json,
     extract::{Query, State},
     response::IntoResponse,
 };
@@ -9,28 +10,21 @@ use uuid::Uuid;
 
 use crate::{
     engine::{
-        EngineState,
-        auth::{self, AuthUser},
-        check_if_he_can_take_action_in_room,
+        EngineErr, EngineState, auth::{AuthUser}, right_control::User
     },
-    repository::{RepositoryErr, check_if_img_vote_exists, check_if_room_has_img, upsert_img_vote},
+    repository::{check_if_img_vote_exists, upsert_img_vote},
     ws::broadcast,
 };
 
-#[derive(thiserror::Error, Debug)]
-pub enum VoteErr {
-    #[error("VoteErr: FromRepository: {0}")]
-    FromRepository(#[from] RepositoryErr),
-
-    #[error("VoteErr: RedisErr: {0}")]
-    RedisErr(#[from] RunError<RedisError>),
+#[derive(Deserialize)]
+pub struct VoteQuery {
+    pub room_id: Uuid,
 }
 
 #[derive(Deserialize)]
-pub struct VoteQuery {
+pub struct VotePayload {
     pub img_id: Uuid,
     pub is_good: bool,
-    pub room_id: Uuid,
 }
 
 #[derive(Serialize)]
@@ -44,8 +38,9 @@ pub async fn vote(
     Query(q): Query<VoteQuery>,
     State(state): State<EngineState>,
     auth: AuthUser,
+    Json(payload): Json<VotePayload>,
 ) -> impl IntoResponse {
-    match _vote_inner(q, state, auth).await {
+    match _vote_inner(q, state, auth, payload).await {
         Ok(res) => res,
         Err(e) => {
             tracing::error!("{e}");
@@ -58,23 +53,23 @@ async fn _vote_inner(
     q: VoteQuery,
     state: EngineState,
     auth: AuthUser,
-) -> Result<axum::http::StatusCode, VoteErr> {
-    let mut conn = state.pool.get().await?;
-    if !check_if_he_can_take_action_in_room(&state.db, &mut conn, &auth.user_id, &q.room_id).await?
-    {
+    payload: VotePayload,
+) -> Result<axum::http::StatusCode, EngineErr> {
+    let user = User {
+        user_id: auth.user_id,
+        room_id: q.room_id
+    };
+
+    if !user.can_vote(&state, payload.img_id).await? {
         return Ok(axum::http::StatusCode::FORBIDDEN);
     }
 
-    if !check_if_room_has_img(&state.db, &q.img_id, &q.room_id).await? {
-        return Ok(axum::http::StatusCode::BAD_REQUEST);
-    }
-
-    let img_vote_op = check_if_img_vote_exists(&state.db, &auth.user_id, &q.img_id).await?;
+    let img_vote_op = check_if_img_vote_exists(&state.db, &auth.user_id, &payload.img_id).await?;
     let is_new = img_vote_op.is_none();
     let changed = if is_new {
         false
     } else {
-        img_vote_op.clone().unwrap().is_good == q.is_good
+        img_vote_op.clone().unwrap().is_good == payload.is_good
     };
 
     if !changed && !is_new {
@@ -85,8 +80,8 @@ async fn _vote_inner(
         &state.db,
         img_vote_op,
         auth.user_id,
-        q.img_id,
-        q.is_good.clone(),
+        payload.img_id,
+        payload.is_good.clone(),
     )
     .await?;
 
@@ -94,8 +89,8 @@ async fn _vote_inner(
         &state.manager,
         q.room_id,
         crate::ws::ServerEvent::VotedUpdated {
-            image_id: q.img_id,
-            is_good: q.is_good,
+            image_id: payload.img_id,
+            is_good: payload.is_good,
             is_new: is_new,
             changed: changed,
         },
