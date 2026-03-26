@@ -3,7 +3,7 @@ use axum::{
     extract::{Query, State},
     response::IntoResponse,
 };
-use base64::{Engine, prelude::BASE64_STANDARD};
+use base64::{Engine, alphabet::URL_SAFE, prelude::{BASE64_STANDARD, BASE64_URL_SAFE}};
 use rand::Rng;
 use redis::FromRedisValue;
 use sea_orm::{ConnectionTrait, DatabaseConnection};
@@ -19,7 +19,7 @@ use crate::{
 fn gen_temp_keyword() -> String {
     let mut bytes = [0u8; 12];
     rand::rng().fill_bytes(&mut bytes);
-    String::from_utf8(BASE64_STANDARD.decode(bytes).unwrap()).unwrap()
+    BASE64_URL_SAFE.encode(bytes.as_ref())
 }
 
 async fn gen_keyword(db: &impl ConnectionTrait) -> Result<String, EngineErr> {

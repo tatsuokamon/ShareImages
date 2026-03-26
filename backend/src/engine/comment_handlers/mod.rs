@@ -25,7 +25,7 @@ pub struct PostCommentPayload {
     content: String,
 }
 
-async fn post_comment_innser(
+async fn post_comment_inner(
     q: PostCommentQuery,
     state: EngineState,
     auth: AuthUser,
@@ -71,7 +71,7 @@ pub async fn post_comment(
     auth: AuthUser,
     Json(payload): Json<PostCommentPayload>,
 ) -> impl IntoResponse {
-    match post_comment_innser(q, state, auth, payload).await {
+    match post_comment_inner(q, state, auth, payload).await {
         Ok(resp) => resp,
         Err(e) => {
             tracing::error!("{e}");

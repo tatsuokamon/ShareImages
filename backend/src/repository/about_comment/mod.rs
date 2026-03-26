@@ -1,6 +1,6 @@
 use bb8::PooledConnection;
 use bb8_redis::RedisConnectionManager;
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::{DateTime, Utc};
 use redis::AsyncCommands;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, EntityTrait, QueryFilter, QuerySelect,
@@ -57,7 +57,7 @@ pub async fn get_posted_comments(
             comment::Relation::Room.def().rev(),
         )
         .filter(room::Column::Id.eq(room_id.to_string()))
-        .filter(comment::Column::DeletedAt.eq(None as Option<NaiveDateTime>))
+        .filter(comment::Column::DeletedAt.eq(None as Option<DateTime<Utc>>))
         .all(db)
         .await?)
 }

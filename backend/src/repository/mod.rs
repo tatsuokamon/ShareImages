@@ -3,7 +3,7 @@ use aws_sdk_s3::{
 };
 use bb8::PooledConnection;
 use bb8_redis::RedisConnectionManager;
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::{DateTime, Utc};
 use redis::{AsyncCommands, RedisError};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DbErr, EntityTrait, QueryFilter, QuerySelect,

@@ -65,7 +65,7 @@ pub async fn check_if_he_is_banned(
         .hget::<String, &str, Option<String>>(global_ban_tag(), user_identifier)
         .await?
         .is_some()
-        && conn
+        || conn
             .hget::<String, &str, Option<String>>(room_ban_tag(room_id), user_identifier)
             .await?
             .is_some())

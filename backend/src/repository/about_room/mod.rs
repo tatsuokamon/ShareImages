@@ -1,6 +1,5 @@
 use bb8::PooledConnection;
 use bb8_redis::RedisConnectionManager;
-use chrono::NaiveDateTime;
 use redis::AsyncCommands;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, EntityTrait, QueryFilter, QuerySelect,
@@ -29,7 +28,7 @@ pub async fn check_is_keyword_available(
         .filter(room::Column::Keyword.eq(keyword))
         .one(db)
         .await?
-        .is_some())
+        .is_none())
 }
 
 pub async fn generate_room(
@@ -56,7 +55,7 @@ pub async fn get_room_id_from_keyword(
     Ok(
         if let Some(m) = room::Entity::find()
             .filter(room::Column::Keyword.eq(keyword))
-            .filter(room::Column::DeletedAt.eq(None as Option<NaiveDateTime>))
+            .filter(room::Column::DeletedAt.eq(None as Option<chrono::DateTime<chrono::Utc>>))
             .one(db)
             .await?
         {

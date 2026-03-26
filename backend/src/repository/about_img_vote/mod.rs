@@ -1,6 +1,5 @@
 use bb8::PooledConnection;
 use bb8_redis::RedisConnectionManager;
-use chrono::NaiveDateTime;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, EntityTrait, QueryFilter, QuerySelect,
     RelationTrait,
@@ -22,7 +21,7 @@ pub async fn check_if_img_vote_exists(
             sea_orm::JoinType::InnerJoin,
             image_vote::Relation::Images.def().rev(),
         )
-        .filter(images::Column::DeletedAt.eq(None as Option<NaiveDateTime>))
+        .filter(images::Column::DeletedAt.eq(None as Option<chrono::DateTime<chrono::Utc>>))
         .filter(image_vote::Column::UserId.eq(user_id.to_string()))
         .filter(image_vote::Column::ImageId.eq(img_id.to_string()))
         .one(db)

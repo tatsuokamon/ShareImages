@@ -69,7 +69,7 @@ async fn _vote_inner(
     let changed = if is_new {
         false
     } else {
-        img_vote_op.clone().unwrap().is_good == payload.is_good
+        img_vote_op.clone().unwrap().is_good != payload.is_good
     };
 
     if !changed && !is_new {
