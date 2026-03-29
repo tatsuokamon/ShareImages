@@ -3,12 +3,13 @@
 	<head>
 		<meta charset="UTF-8" />
 
-		<link href="./styles/admin.css" rel="stylesheet" />
-		<script type="module" src="./dist/pages/admin_room/app.js"></script>
+		<link href="/styles/admin.css" rel="stylesheet" />
+		<script type="module" src="/dist/pages/admin_room/app.js"></script>
 		<script>
+			const params = new URLSearchParams(location.search);
 			window.onload = () => {
 				import { App } from "./app";
-				const keyword = "";
+				const keyword = params.get("keyword");
 
 				const app = new App(keyword);
 				await app.init()

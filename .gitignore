@@ -1,3 +1,4 @@
 dev/
 backend/target/
+backend/src/target
 backend/migration/target/

@@ -240,7 +240,7 @@ export class App {
 			this.message_manager.create_post(posts);
 
 			this.socket = new WebSocket(
-				URLManager.get_ws_endpoint(this.room.id)
+				URLManager.get_ws_endpoint(this.room.id, this.user.id)
 			);
 			this.socket.onmessage = (message) => {
 				let e: WsServerEvent = JSON.parse(message.data);

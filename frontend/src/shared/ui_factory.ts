@@ -1,4 +1,5 @@
 import type { Room } from "./room";
+import { Config } from "./config";
 
 export const create_icon = (display_name: string | null) => {
 	const icon = document.createElement("div");
@@ -8,10 +9,10 @@ export const create_icon = (display_name: string | null) => {
 	return icon;
 };
 
-export const create_display_name = (display_name: string): HTMLElement => {
+export const create_display_name = (display_name: string| null): HTMLElement => {
 	const div = document.createElement("div");
 	div.className = "display-name";
-	div.innerText = display_name;
+	div.innerText = display_name ?? Config.default_name;
 
 	return div;
 };

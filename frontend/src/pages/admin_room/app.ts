@@ -129,7 +129,7 @@ const comment_creater = (src: CommentMeta, actions: Actions): HTMLElement => {
 		if (identifier) {
 			if (
 				identifier !== actions.user.identifier &&
-				prompt("BAN HIM?")
+				confirm("BAN HIM?")
 			)
 				actions.post_ban(identifier);
 		}
@@ -400,7 +400,7 @@ export class App {
 				});
 			});
 			this.socket = new WebSocket(
-				URLManager.get_ws_endpoint(this.room.id)
+				URLManager.get_ws_endpoint(this.room.id, this.user.id)
 			);
 
 			this.socket.onmessage = (message) => {

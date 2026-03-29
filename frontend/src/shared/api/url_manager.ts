@@ -5,11 +5,11 @@ export const gen_authorization = (token: string): string => {
 };
 export class URLManager {
 	static users_endpoint = (): string => {
-		return `${Config.host}new_user_id`;
+		return `${Config.api_endpoint}new_user_id`;
 	};
 
 	static ban_endpoint = (): string => {
-		return `${Config.host}ban`;
+		return `${Config.api_endpoint}ban`;
 	};
 
 	static genreate_get_ban_endpoint = (q: GetBanQuery): string => {
@@ -25,7 +25,7 @@ export class URLManager {
 	};
 
 	static room_endpoint = (): string => {
-		return `${Config.host}room`;
+		return `${Config.api_endpoint}room`;
 	};
 
 	static get_room_endpoint = (q: GetRoomQuery): string => {
@@ -41,7 +41,7 @@ export class URLManager {
 	};
 
 	static presigned_url_endpoint = (): string => {
-		return `${Config.host}presigned_url`;
+		return `${Config.api_endpoint}presigned_url`;
 	};
 
 	static get_presigned_url_endpoint = (
@@ -51,7 +51,7 @@ export class URLManager {
 	};
 
 	static image_endpoint = (): string => {
-		return `${Config.host}img`;
+		return `${Config.api_endpoint}img`;
 	};
 
 	static delete_image_endpoint = (q: DeleteImageQuery) => {
@@ -65,7 +65,7 @@ export class URLManager {
 	};
 
 	static posted_image_endpoint = (): string => {
-		return `${Config.host}posted_img`;
+		return `${Config.api_endpoint}posted_img`;
 	};
 
 	static get_posted_image_endpoint = (q: GetPostedImageQuery): string => {
@@ -73,7 +73,7 @@ export class URLManager {
 	};
 
 	static comment_endpoint = (): string => {
-		return `${Config.host}comment`;
+		return `${Config.api_endpoint}comment`;
 	};
 
 	static post_comment_endpoint = (q: PostCommentQuery): string => {
@@ -85,7 +85,7 @@ export class URLManager {
 	};
 
 	static posted_comment_endpoint = (): string => {
-		return `${Config.host}posted_comment`;
+		return `${Config.api_endpoint}posted_comment`;
 	};
 
 	static get_posted_comment_endpoint = (
@@ -95,7 +95,7 @@ export class URLManager {
 	};
 
 	static vote_endpoint = (): string => {
-		return `${Config.host}vote`;
+		return `${Config.api_endpoint}vote`;
 	};
 
 	static post_vote_endpoint = (q: VoteQuery): string => {
@@ -103,11 +103,14 @@ export class URLManager {
 	};
 
 	static ws_endpoint = (): string => {
-		return `${Config.host}ws`;
+		return `${Config.api_endpoint}ws`;
 	};
 
-	static get_ws_endpoint = (room_id: string): string => {
-		return `${this.ws_endpoint()}?room_id=${room_id}`;
+	static get_ws_endpoint = (room_id: string, user_id: string): string => {
+		return `${this.ws_endpoint()}?room_id=${room_id}&user_id=${user_id}`.replace(
+			"https://",
+			"wss://"
+		);
 	};
 }
 
@@ -183,14 +186,18 @@ export type APIQueries =
 	| GetPostedImageQuery
 	| GetPostedCommentQuery
 	| GetRoomQuery
-	| DeleteRoomQuery
+	| DeleteRoomQuery;
 
-export async function fetch_with_token<Query>(token: string, q: Query, f: (arg0: Query) => string, method: string ): Promise<Response>{
+export async function fetch_with_token<Query>(
+	token: string,
+	q: Query,
+	f: (arg0: Query) => string,
+	method: string
+): Promise<Response> {
 	return await fetch(f(q), {
 		method,
 		headers: {
-			"Authorization": gen_authorization(token)
-		}
-	})
-
+			Authorization: gen_authorization(token),
+		},
+	});
 }

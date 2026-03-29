@@ -96,11 +96,11 @@ const post_id_to_map = (id: string, post: Post, map: Map<string, BanSrc>) => {
 	let got = map.get(post.user_identifier);
 	if (got) {
 		got.post_ids.push(id)
-		got.display_name = post.display_name;
+		got.display_name = post.display_name ?? Config.default_name;
 	} else {
 		let src : BanSrc = {
 			identifier: post.user_identifier,
-			display_name: post.display_name,
+			display_name: post.display_name ?? Config.default_name,
 			banned: false,
 			post_ids: [id]
 		}

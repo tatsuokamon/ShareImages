@@ -1,3 +1,4 @@
+import { Config } from "../config";
 import type { ImgMeta } from "../image";
 import type { Room } from "../room";
 import type {
@@ -65,10 +66,12 @@ export const post_event_handler = (
 		}
 		case "VotedUpdated": {
 			let { image_id, is_good, is_new, changed } = e;
-			let score_diff =
-				(is_new ? 1 : 2) *
-				(is_good ? 1 : -1) *
-				(changed ? 1 : 0);
+			let score_diff: number = 0;
+			if (is_new) {
+				score_diff = is_good ? 1 : -1;
+			} else if (changed) {
+				score_diff = is_good ? 2 : -2;
+			}
 			if (score_diff != 0) {
 				message_manager.update_img(
 					image_id,
@@ -182,7 +185,7 @@ export const master_event_handler = (
 				created_at,
 			});
 			ban_manager.upsert(user_identifier, (src: BanSrc) => {
-				src.display_name = display_name;
+				src.display_name = display_name ?? Config.default_name;
 				src.post_ids.push(comment_id);
 				return src;
 			});
@@ -195,10 +198,13 @@ export const master_event_handler = (
 		}
 		case "VotedUpdated": {
 			let { image_id, is_good, is_new, changed } = e;
-			let score_diff =
-				(is_new ? 1 : 2) *
-				(is_good ? 1 : -1) *
-				(changed ? 1 : 0);
+			let score_diff: number = 0;
+
+			if (is_new) {
+				score_diff = is_good ? 1 : -1;
+			} else if (changed) {
+				score_diff = is_good ? 2 : -2;
+			}
 			if (score_diff != 0) {
 				message_manager.update_img(
 					image_id,
