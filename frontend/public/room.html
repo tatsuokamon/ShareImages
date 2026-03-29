@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ja">
+	<head>
+		<meta charset="UTF-8" />
+		<link href="./styles/room.css" rel="stylesheet" />
+		<script type="module" src="./dist/pages/room/app.js"></script>
+		<script>
+			window.onload = () => {
+				import { App } from "./app";
+				const keyword = "";
+
+				const app = new App(keyword);
+				await app.init()
+			}
+		</script>
+	</head>
+	<body>
+		<div class="navbar">Share Images</div>
+		<div class="room-bar" id="room-info"></div>
+		<div class="container" id="message"></div>
+		<div class="bottom-ui-wrapper">
+			<div class="bottom-ui" id="bottom_ui"></div>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ja">
+	<head>
+		<meta charset="UTF-8" />
+		<link href="./styles/index.css" rel="stylesheet" />
+	</head>
+		<script type="module" src="./dist/pages/admin_room/app.js"></script>
+		<script>
+			window.onload = () => {
+				import { App } from "./app";
+
+				const app = new App();
+				await app.init()
+			}
+		</script>
+
+	<body>
+		<div class="navbar">Share Images</div>
+
+		<div class="container">
+			<div class="card">
+				<h1 class="title">Room Access</h1>
+
+				<div class="section">
+					<div class="label">keyword</div>
+
+					<input
+						id="keyword_input"
+						class="text-input"
+						placeholder="enter room keyword"
+					/>
+				</div>
+
+				<div class="button-group">
+					<button
+						id="listener_btn"
+						class="action-btn listener"
+					>
+						Listenerとして入室
+					</button>
+
+					<button
+						id="master_join_btn"
+						class="action-btn master"
+					>
+						Masterとして入室
+					</button>
+
+					<button
+						id="master_create_btn"
+						class="action-btn create"
+					>
+						新規作成してMaster入室
+					</button>
+				</div>
+			</div>
+		</div>
+
+	</body>
+</html>

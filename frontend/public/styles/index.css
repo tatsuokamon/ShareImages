@@ -1,0 +1,160 @@
+body {
+	margin: 0;
+	font-family:
+		system-ui,
+		-apple-system,
+		BlinkMacSystemFont,
+		"Segoe UI",
+		Roboto,
+		"Noto Sans JP",
+		sans-serif;
+
+	background: #f5f6f7;
+
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+}
+
+/* ---------------- navbar ---------------- */
+
+.navbar {
+	position: sticky;
+	top: 0;
+	background: #111;
+	font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+	font-size: 28px;
+	font-weight: 800;
+	letter-spacing: 0.04em;
+	padding: 18px 24px;
+	color: white;
+	z-index: 1;
+}
+
+/* ---------------- layout ---------------- */
+
+.container {
+	flex: 1;
+
+	display: flex;
+
+	justify-content: center;
+
+	align-items: center;
+
+	padding: 20px;
+}
+
+/* ---------------- card ---------------- */
+
+.card {
+	width: 360px;
+
+	background: white;
+
+	border-radius: 14px;
+
+	padding: 28px;
+
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+/* ---------------- title ---------------- */
+
+.title {
+	margin-top: 0;
+
+	margin-bottom: 22px;
+
+	font-size: 20px;
+
+	font-weight: 600;
+
+	text-align: center;
+}
+
+/* ---------------- input ---------------- */
+
+.section {
+	margin-bottom: 22px;
+}
+
+.label {
+	font-size: 13px;
+
+	color: #666;
+
+	margin-bottom: 6px;
+}
+
+.text-input {
+	width: 100%;
+
+	padding: 10px;
+
+	font-size: 15px;
+
+	border-radius: 8px;
+
+	border: 1px solid #ddd;
+
+	outline: none;
+
+	transition: 0.2s;
+}
+
+.text-input:focus {
+	border-color: #4f8cff;
+}
+
+/* ---------------- buttons ---------------- */
+
+.button-group {
+	display: flex;
+
+	flex-direction: column;
+
+	gap: 10px;
+}
+
+.action-btn {
+	padding: 12px;
+
+	border: none;
+
+	border-radius: 10px;
+
+	font-size: 14px;
+
+	cursor: pointer;
+
+	transition: 0.15s;
+}
+
+.listener {
+	background: #f1f3f5;
+}
+
+.listener:hover {
+	background: #e6e8ea;
+}
+
+.master {
+	background: #4f8cff;
+
+	color: white;
+}
+
+.master:hover {
+	background: #3c74e0;
+}
+
+.create {
+	background: #1fbf75;
+
+	color: white;
+}
+
+.create:hover {
+	background: #18a864;
+}
