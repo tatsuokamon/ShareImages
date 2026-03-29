@@ -5,20 +5,17 @@ use serde::Serialize;
 use tokio::sync::mpsc;
 use uuid::Uuid;
 
-use crate::repository::{
-    check_if_he_exists, check_if_his_img_waits_enough, generate_object_key, generate_presigned_url,
-    update_commit_img_status,
-};
-
 #[derive(Serialize, Clone)]
 #[serde(tag = "type")]
 pub enum ServerEvent {
     ImagePosted {
         id: Uuid,
         title: Option<String>,
+        score: i32,
         display_name: String,
         user_identifier: String,
         object_key: String,
+        created_at: i64,
     },
 
     ImageDeleted {
@@ -30,6 +27,7 @@ pub enum ServerEvent {
         display_name: String,
         content: String,
         user_identifier: String,
+        created_at: i64,
     },
 
     CommentDeleted {

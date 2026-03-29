@@ -75,14 +75,14 @@ pub async fn get_all_banned_users(
     conn: &mut PooledConnection<'_, RedisConnectionManager>,
     room_id: Uuid,
 ) -> Result<Option<Vec<String>>, RepositoryErr> {
-    Ok(
+    Ok(Some(
         if let Some(v) = conn
             .hgetall::<String, Option<HashMap<String, String>>>(room_ban_tag(&room_id))
             .await?
         {
-            Some(v.into_keys().collect())
+            v.into_keys().collect()
         } else {
-            None
+            vec![]
         },
-    )
+    ))
 }

@@ -74,6 +74,7 @@ pub enum Images {
 
     RoomId,
     UserId,
+    UserIdentifier,
     ObjectKey,
 
     CreatedAt,

@@ -3,7 +3,11 @@ use axum::{
     extract::{Query, State},
     response::IntoResponse,
 };
-use base64::{Engine, alphabet::URL_SAFE, prelude::{BASE64_STANDARD, BASE64_URL_SAFE}};
+use base64::{
+    Engine,
+    alphabet::URL_SAFE,
+    prelude::{BASE64_STANDARD, BASE64_URL_SAFE},
+};
 use rand::Rng;
 use redis::FromRedisValue;
 use sea_orm::{ConnectionTrait, DatabaseConnection};
@@ -12,7 +16,10 @@ use uuid::Uuid;
 
 use crate::{
     engine::{EngineErr, EngineState, JsonResponse, auth::AuthUser, right_control::User},
-    repository::{self, check_is_keyword_available, generate_room, get_room_id_from_keyword},
+    repository::{
+        self, check_if_he_is_authorized, check_is_keyword_available, generate_room,
+        get_room_id_from_keyword,
+    },
     ws::broadcast,
 };
 
@@ -77,7 +84,6 @@ pub async fn post_room(auth: AuthUser, State(state): State<EngineState>) -> impl
 
 #[derive(Deserialize)]
 pub struct GetRoomQuery {
-    pub user_id: Uuid,
     pub keyword: String,
 }
 
@@ -86,20 +92,29 @@ pub struct GetRoomResult {
     pub room_id: Option<Uuid>,
     pub how_many: usize,
     pub success: bool,
+    pub as_master: bool,
 }
 
 async fn get_room_inner(
+    auth: AuthUser,
     q: GetRoomQuery,
     state: EngineState,
 ) -> Result<(axum::http::StatusCode, Json<GetRoomResult>), EngineErr> {
     Ok(
         if let Some(room_id) = get_room_id_from_keyword(&state.db, &q.keyword).await? {
+            let as_master = check_if_he_is_authorized(&state.db, &auth.user_id, &room_id).await?;
             (
                 axum::http::StatusCode::OK,
                 Json(GetRoomResult {
                     room_id: Some(room_id),
                     success: true,
-                    how_many: state.manager.rooms.get(&room_id).unwrap().len(),
+                    how_many: state
+                        .manager
+                        .rooms
+                        .get(&room_id)
+                        .map(|r| r.len())
+                        .unwrap_or(0),
+                    as_master,
                 }),
             )
         } else {
@@ -109,6 +124,7 @@ async fn get_room_inner(
                     room_id: None,
                     how_many: 0,
                     success: false,
+                    as_master: false,
                 }),
             )
         },
@@ -116,10 +132,11 @@ async fn get_room_inner(
 }
 
 pub async fn get_room(
+    auth: AuthUser,
     Query(q): Query<GetRoomQuery>,
     State(state): State<EngineState>,
 ) -> impl IntoResponse {
-    match get_room_inner(q, state).await {
+    match get_room_inner(auth, q, state).await {
         Ok(res) => res,
         Err(e) => {
             tracing::error!("{e}");
@@ -129,6 +146,7 @@ pub async fn get_room(
                     room_id: None,
                     how_many: 0,
                     success: false,
+                    as_master: false,
                 }),
             )
         }

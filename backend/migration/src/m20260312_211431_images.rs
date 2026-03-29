@@ -19,6 +19,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Images::DisplayName).text())
                     .col(ColumnDef::new(Images::RoomId).uuid().not_null())
                     .col(ColumnDef::new(Images::UserId).uuid().not_null())
+                    .col(ColumnDef::new(Images::UserIdentifier).string().not_null())
                     .col(ColumnDef::new(Images::ObjectKey).text().not_null())
                     .foreign_key(
                         ForeignKey::create()
@@ -60,6 +61,7 @@ pub enum Images {
     RoomId,
     UserId,
     ObjectKey,
+    UserIdentifier,
 
     CreatedAt,
     DeletedAt,

@@ -134,10 +134,13 @@ async fn post_img_inner(
     }
 
     let object_key = obj_key.unwrap();
+    let identifier = generate_user_identifier(&user.user_id);
     let img_id = commit_img(
         &state.db,
         q.room_id,
         auth.user_id,
+        identifier.clone(),
+        payload.display_name.clone(),
         payload.title.clone(),
         object_key.clone(),
     )
@@ -151,9 +154,11 @@ async fn post_img_inner(
         ServerEvent::ImagePosted {
             id: img_id,
             title: payload.title,
+            score: 0,
             display_name: payload.display_name.unwrap_or("無名".to_string()),
-            user_identifier: generate_user_identifier(&auth.user_id),
+            user_identifier: identifier,
             object_key: object_key,
+            created_at: chrono::Utc::now().timestamp(),
         },
     );
 

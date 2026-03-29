@@ -40,10 +40,12 @@ async fn post_comment_inner(
         return Ok(axum::http::StatusCode::FORBIDDEN);
     }
 
+    let identifier = generate_user_identifier(&user.user_id);
     let id = repository::post_comment(
         &state.db,
         user.room_id,
         user.user_id,
+        identifier.clone(),
         payload.display_name.clone(),
         payload.content.clone(),
     )
@@ -58,7 +60,8 @@ async fn post_comment_inner(
             id: id,
             display_name: payload.display_name.unwrap_or("無名".to_string()),
             content: payload.content,
-            user_identifier: generate_user_identifier(&auth.user_id),
+            user_identifier: identifier,
+            created_at: chrono::Utc::now().timestamp(),
         },
     );
 

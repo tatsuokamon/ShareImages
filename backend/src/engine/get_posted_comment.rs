@@ -8,11 +8,7 @@ use uuid::Uuid;
 
 use crate::{engine::EngineState, entity::comment, repository};
 
-#[derive(Serialize)]
-pub struct GetPostedComment {
-    pub payload: Vec<comment::Model>,
-    pub success: bool,
-}
+type GetPostedComment = Option<Vec<comment::Model>>;
 
 #[derive(Deserialize)]
 pub struct GetPostedQuery {
@@ -24,23 +20,11 @@ pub async fn get_posted_comment(
     State(state): State<EngineState>,
 ) -> impl IntoResponse {
     match repository::get_posted_comments(&state.db, &q.room_id).await {
-        Ok(result) => (
-            axum::http::StatusCode::OK,
-            Json(GetPostedComment {
-                payload: result,
-                success: true,
-            }),
-        ),
+        Ok(result) => (axum::http::StatusCode::OK, Json(Some(result))),
 
         Err(e) => {
             tracing::error!("{e}");
-            (
-                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                Json(GetPostedComment {
-                    payload: vec![],
-                    success: false,
-                }),
-            )
+            (axum::http::StatusCode::INTERNAL_SERVER_ERROR, Json(None))
         }
     }
 }

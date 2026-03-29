@@ -9,9 +9,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::{
-    engine::{
-        EngineErr, EngineState, auth::{AuthUser}, right_control::User
-    },
+    engine::{EngineErr, EngineState, auth::AuthUser, right_control::User},
     repository::{check_if_img_vote_exists, upsert_img_vote},
     ws::broadcast,
 };
@@ -25,13 +23,6 @@ pub struct VoteQuery {
 pub struct VotePayload {
     pub img_id: Uuid,
     pub is_good: bool,
-}
-
-#[derive(Serialize)]
-pub struct VoteResult {
-    pub img_id: Uuid,
-    pub is_good: bool,
-    pub is_new: bool,
 }
 
 pub async fn vote(
@@ -57,7 +48,7 @@ async fn _vote_inner(
 ) -> Result<axum::http::StatusCode, EngineErr> {
     let user = User {
         user_id: auth.user_id,
-        room_id: q.room_id
+        room_id: q.room_id,
     };
 
     if !user.can_vote(&state, payload.img_id).await? {

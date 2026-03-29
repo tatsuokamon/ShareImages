@@ -1,12 +1,19 @@
 use std::sync::Arc;
 
-use axum::{Json, Router, middleware, response::IntoResponse, routing};
+use axum::{
+    Json, Router,
+    http::StatusCode,
+    middleware,
+    response::IntoResponse,
+    routing::{self, get_service},
+};
 use bb8::{Pool, RunError};
 use bb8_redis::RedisConnectionManager;
 use redis::RedisError;
 use sea_orm::DatabaseConnection;
 use serde::Serialize;
 use sha2::Digest;
+use tower_http::services::ServeDir;
 use uuid::Uuid;
 
 use crate::{
@@ -30,10 +37,10 @@ mod get_posted_comment;
 mod get_posted_img;
 
 mod ban_handlers;
-mod vote_handlers;
 mod comment_handlers;
 mod image_handlers;
 mod room_handler;
+mod vote_handlers;
 mod ws_handler;
 
 type JsonResponse<Response: Serialize> = (axum::http::StatusCode, Json<Response>);
@@ -57,8 +64,8 @@ fn generate_user_identifier(user_id: &Uuid) -> String {
     format!("user-{:x}", sha2::Sha256::digest(user_id.as_bytes()))
 }
 
-pub fn generate_router(state: EngineState) -> Router {
-    Router::new()
+pub fn generate_router(state: EngineState, public_path: &str) -> Router {
+    let api_router = Router::new()
         // about user
         .route("/new_user_id", axum::routing::get(get_user_id::get_user_id))
         .route(
@@ -95,7 +102,11 @@ pub fn generate_router(state: EngineState) -> Router {
         // about ws
         .route("/ws", axum::routing::get(ws_handler))
         .layer(middleware::from_fn(rate_limit_middleware))
-        .with_state(state)
+        .with_state(state);
+    let frontend_service = get_service(ServeDir::new(public_path))
+        .handle_error(|_| async { StatusCode::INTERNAL_SERVER_ERROR });
+
+    Router::new().nest("/api", api_router).fallback_service(frontend_service)
 }
 
 #[derive(thiserror::Error, Debug)]

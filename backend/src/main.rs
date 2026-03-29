@@ -1,4 +1,4 @@
-use std::{sync::Arc, time::Duration};
+use std::{net::SocketAddr, sync::Arc, time::Duration};
 
 use aws_config::{Region, meta::region::RegionProviderChain};
 use bb8::Pool;
@@ -73,12 +73,15 @@ async fn main() {
         req_per_minute: get_env_with_parsing!("REQUEST_PER_MINUTE", usize),
     });
 
-    let router = generate_router(state);
+    let router = generate_router(state, &get_env!("PUBLIC_PATH"));
     let listener = tokio::net::TcpListener::bind(get_env!("EXPOSED_URL"))
         .await
         .expect("failed to bind TcpListener");
 
-    axum::serve(listener, router)
-        .await
-        .expect("failed to serve");
+    axum::serve(
+        listener,
+        router.into_make_service_with_connect_info::<SocketAddr>(),
+    )
+    .await
+    .expect("failed to serve");
 }

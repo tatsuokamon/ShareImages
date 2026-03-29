@@ -14,6 +14,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Comment::Id).uuid().primary_key())
                     .col(ColumnDef::new(Comment::RoomId).uuid().not_null())
                     .col(ColumnDef::new(Comment::UserId).uuid().not_null())
+                    .col(ColumnDef::new(Comment::UserIdentifier).string().not_null())
                     .col(ColumnDef::new(Comment::Content).text().not_null())
                     .col(ColumnDef::new(Comment::DisplayName).text())
                     .col(ColumnDef::new(Comment::CreatedAt).timestamp_with_time_zone().not_null())
@@ -54,6 +55,7 @@ pub enum Comment {
     Id,
     RoomId,
     UserId,
+    UserIdentifier,
 
     Content,
     DisplayName,

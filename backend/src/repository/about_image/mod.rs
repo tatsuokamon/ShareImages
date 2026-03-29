@@ -126,6 +126,8 @@ pub async fn commit_img(
 
     room_id: Uuid,
     user_id: Uuid,
+    user_identifier: String,
+    display_name: Option<String>,
     title: Option<String>,
     object_key: String,
 ) -> Result<Uuid, RepositoryErr> {
@@ -137,6 +139,8 @@ pub async fn commit_img(
         user_id: sea_orm::ActiveValue::Set(user_id),
         object_key: sea_orm::ActiveValue::Set(object_key),
         score: sea_orm::ActiveValue::Set(0),
+        user_identifier: sea_orm::ActiveValue::Set(user_identifier),
+        display_name: sea_orm::ActiveValue::Set(display_name),
         ..Default::default()
     }
     .insert(db)

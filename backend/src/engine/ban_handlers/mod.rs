@@ -13,7 +13,7 @@ use crate::{
 
 #[derive(serde::Deserialize)]
 pub struct BanControlQuery {
-    pub target_identifier: String,
+    pub user_identifier: String,
     pub room_id: Uuid,
 }
 
@@ -34,14 +34,14 @@ async fn post_ban_user_inner(
 
     // exectute
     let mut conn = state.pool.get().await?;
-    repository::ban_user(&mut conn, &q.room_id, &q.target_identifier).await?;
+    repository::ban_user(&mut conn, &q.room_id, &q.user_identifier).await?;
 
     // broadcast
     broadcast(
         &state.manager,
         q.room_id,
         crate::ws::ServerEvent::UserBanned {
-            his_identifier: q.target_identifier,
+            his_identifier: q.user_identifier,
         },
     );
 
@@ -74,19 +74,19 @@ async fn delete_ban_user_inner(
     };
 
     if !user.can_ban_user(&state).await? {
-        return Ok(axum::http::StatusCode::OK);
+        return Ok(axum::http::StatusCode::FORBIDDEN);
     }
 
     // exectute
     let mut conn = state.pool.get().await?;
-    repository::resolve_ban(&mut conn, &q.room_id, &q.target_identifier).await?;
+    repository::resolve_ban(&mut conn, &q.room_id, &q.user_identifier).await?;
 
     // broadcast
     broadcast(
         &state.manager,
         q.room_id,
         crate::ws::ServerEvent::ResolvedUserBan {
-            his_identifier: q.target_identifier,
+            his_identifier: q.user_identifier,
         },
     );
 

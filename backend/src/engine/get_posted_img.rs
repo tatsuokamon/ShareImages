@@ -3,16 +3,10 @@ use axum::{
     extract::{Query, State},
     response::IntoResponse,
 };
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{engine::EngineState, entity::images, repository};
-
-#[derive(Serialize)]
-pub struct GetPostedImgResult {
-    pub payload: Vec<images::Model>,
-    pub success: bool,
-}
 
 #[derive(Deserialize)]
 pub struct GetPostedImgQuery {
@@ -24,22 +18,10 @@ pub async fn get_posted_img(
     State(state): State<EngineState>,
 ) -> impl IntoResponse {
     match repository::get_posted_imgs(&state.db, &q.room_id).await {
-        Ok(v) => (
-            axum::http::StatusCode::OK,
-            Json(GetPostedImgResult {
-                payload: v,
-                success: true,
-            }),
-        ),
+        Ok(v) => (axum::http::StatusCode::OK, Json(Some(v))),
         Err(e) => {
             tracing::error!("{e}");
-            (
-                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                Json(GetPostedImgResult {
-                    payload: vec![],
-                    success: false,
-                }),
-            )
+            (axum::http::StatusCode::INTERNAL_SERVER_ERROR, Json(None))
         }
     }
 }

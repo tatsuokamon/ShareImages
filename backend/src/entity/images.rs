@@ -22,6 +22,7 @@ pub struct Model {
     pub room_id: Uuid,
     #[serde(skip)]
     pub user_id: Uuid,
+    pub user_identifier: String,
     #[sea_orm(column_type = "Text")]
     pub object_key: String,
 }

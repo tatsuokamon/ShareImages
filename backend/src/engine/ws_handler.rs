@@ -22,21 +22,21 @@ pub async fn ws_handler(
         Ok(true) => {
             if let Some(room) = state.manager.rooms.get(&q.room_id) {
                 if room.get(&q.user_id).is_some() {
-                    return axum::http::StatusCode::BAD_REQUEST;
+                    return axum::http::StatusCode::BAD_REQUEST.into_response();
                 }
             }
 
             let moved_state = state.clone();
-            let _ = ws.on_upgrade(move |socket| async move {
+            ws.on_upgrade(move |socket| async move {
                 let state = moved_state;
                 handle_socket(socket, q.room_id, q.user_id, &state.manager).await;
-            });
-            axum::http::StatusCode::OK
+            })
+            .into_response()
         }
-        Ok(false) => axum::http::StatusCode::BAD_REQUEST,
+        Ok(false) => axum::http::StatusCode::BAD_REQUEST.into_response(),
         Err(e) => {
             tracing::error!("{e}");
-            axum::http::StatusCode::INTERNAL_SERVER_ERROR
+            axum::http::StatusCode::INTERNAL_SERVER_ERROR.into_response()
         }
     }
 }

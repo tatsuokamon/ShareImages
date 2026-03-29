@@ -6,7 +6,6 @@ use serde::Serialize;
 
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize)]
 #[sea_orm(table_name = "comment")]
-#[serde(tag = "type")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
@@ -14,6 +13,7 @@ pub struct Model {
     pub room_id: Uuid,
     #[serde(skip)]
     pub user_id: Uuid,
+    pub user_identifier: String,
     #[sea_orm(column_type = "Text")]
     pub content: String,
     #[sea_orm(column_type = "Text", nullable)]

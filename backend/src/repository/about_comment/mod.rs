@@ -78,6 +78,7 @@ pub async fn post_comment(
 
     room_id: Uuid,
     user_id: Uuid,
+    user_identifier: String,
     display_name: Option<String>,
     content: String,
 ) -> Result<Uuid, RepositoryErr> {
@@ -88,6 +89,7 @@ pub async fn post_comment(
         display_name: sea_orm::ActiveValue::Set(display_name),
         created_at: sea_orm::ActiveValue::Set(chrono::Utc::now()),
         deleted_at: sea_orm::ActiveValue::Set(None as Option<chrono::DateTime<chrono::Utc>>),
+        user_identifier: sea_orm::ActiveValue::Set(user_identifier),
         ..Default::default()
     }
     .insert(db)

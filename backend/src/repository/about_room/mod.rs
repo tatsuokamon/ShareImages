@@ -1,5 +1,6 @@
 use bb8::PooledConnection;
 use bb8_redis::RedisConnectionManager;
+use chrono::DateTime;
 use redis::AsyncCommands;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, EntityTrait, QueryFilter, QuerySelect,
@@ -15,6 +16,7 @@ pub async fn check_if_room_exists(
 ) -> Result<bool, RepositoryErr> {
     Ok(room::Entity::find()
         .filter(room::Column::Id.eq(room_id.to_string()))
+        .filter(room::Column::DeletedAt.eq(None as Option<DateTime<chrono::Utc>>))
         .one(db)
         .await?
         .is_some())

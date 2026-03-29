@@ -1,4 +1,6 @@
-use base64::{Engine as _, engine::general_purpose};
+use base64::{
+    Engine as _, alphabet::URL_SAFE, engine::general_purpose, prelude::BASE64_URL_SAFE_NO_PAD,
+};
 use hmac::{Hmac, Mac};
 use sha2::Sha256;
 use uuid::Uuid;
@@ -8,7 +10,7 @@ pub fn generate_token(user_id: &Uuid, secret: &[u8]) -> String {
     mac.update(user_id.as_bytes());
 
     let result = mac.finalize().into_bytes();
-    let sig = general_purpose::STANDARD.encode(result);
+    let sig = BASE64_URL_SAFE_NO_PAD.encode(result);
 
     format!("{}.{}", user_id, sig)
 }
@@ -20,7 +22,7 @@ pub fn verify_token(token: &str, secret: &[u8]) -> Option<Uuid> {
     }
 
     let user_id = Uuid::parse_str(parts[0]).ok()?;
-    let sig = general_purpose::STANDARD.decode(parts[1]).ok()?;
+    let sig = BASE64_URL_SAFE_NO_PAD.decode(parts[1]).ok()?;
 
     let mut mac = Hmac::<Sha256>::new_from_slice(secret).ok()?;
     mac.update(user_id.as_bytes());

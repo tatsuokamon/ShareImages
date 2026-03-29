@@ -1,7 +1,6 @@
 use bb8::PooledConnection;
 use bb8_redis::RedisConnectionManager;
-use regex::Regex;
-use sea_orm::{ColumnTrait, ConnectionTrait, EntityTrait, QueryFilter};
+use sea_orm::{ColumnTrait, ConnectionTrait, QueryFilter};
 use uuid::Uuid;
 
 use crate::{
