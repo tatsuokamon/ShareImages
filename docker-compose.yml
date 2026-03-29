@@ -1,0 +1,166 @@
+version: "3.9"
+
+services:
+
+########################################
+# postgres
+########################################
+
+  postgres:
+    image: postgres:16
+    container_name: share_imgs_postgres
+
+    environment:
+      POSTGRES_USER: share_imgs
+      POSTGRES_PASSWORD: share_imgs_pass
+      POSTGRES_DB: share_imgs
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U share_imgs"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+
+########################################
+# migration
+########################################
+
+  migration:
+    image: tatsuokamon/share_imgs:latest
+    container_name: share_imgs_migration
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    command: ["./migration", "up"]
+
+    environment:
+
+      DATABASE_URL: postgres://share_imgs:share_imgs_pass@postgres/share_imgs
+
+      REDIS_URL: redis://redis:6379
+
+      REDIS_POOL_SIZE: 10
+      REDIS_CONNECTION_TIMEOUT: 30
+
+      POST_IMG_TIMEOUT: 5
+      POST_COMMENT_TIMEOUT: 5
+      BAN_TIMEOUT: 604800
+
+      REQUEST_PER_MINUTE: 20
+
+      PUBLIC_PATH: "./public"
+
+
+########################################
+# redis
+########################################
+
+  redis:
+    image: redis:7
+    container_name: share_imgs_redis
+
+    ports:
+      - "6379:6379"
+
+    volumes:
+      - redis_data:/data
+
+
+########################################
+# backend
+########################################
+
+  backend:
+    image: tatsuokamon/share_imgs:latest
+    container_name: share_imgs_backend
+
+    depends_on:
+
+      migration:
+        condition: service_completed_successfully
+
+      redis:
+        condition: service_started
+
+    ports:
+      - "8080:80"
+
+    environment:
+
+      #################################
+      # DB
+      #################################
+
+      DATABASE_URL: postgres://share_imgs:share_imgs_pass@postgres/share_imgs
+
+      #################################
+      # R2
+      #################################
+
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+
+      END_POINT_URL: ${END_POINT_URL}
+      BUCKET_NAME: ${BUCKET_NAME}
+
+      EXPIRES_IN: ${EXPIRES_IN}
+
+      #################################
+      # redis
+      #################################
+
+      REDIS_URL: redis://redis:6379
+
+      REDIS_POOL_SIZE: 10
+      REDIS_CONNECTION_TIMEOUT: 30
+
+      #################################
+      # rate limit
+      #################################
+
+      REQUEST_PER_MINUTE: 20
+
+      #################################
+      # timeout
+      #################################
+
+      POST_IMG_TIMEOUT: 5
+      POST_COMMENT_TIMEOUT: 5
+      BAN_TIMEOUT: 604800
+
+      #################################
+      # auth
+      #################################
+
+      SECRET: ${SECRET}
+
+      #################################
+      # frontend
+      #################################
+
+      PUBLIC_PATH: "./public"
+
+      #################################
+      # public url
+      #################################
+
+      EXPOSED_URL: ${EXPOSED_URL}
+
+    restart: unless-stopped
+
+
+########################################
+
+volumes:
+
+  postgres_data:
+  redis_data:
