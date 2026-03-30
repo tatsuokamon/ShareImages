@@ -34,6 +34,10 @@ macro_rules! get_env_with_parsing {
 
 #[tokio::main]
 async fn main() {
+    tracing_subscriber::fmt()
+        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+        .init();
+
     // ready state
     let db = Database::connect(get_env!("DATABASE_URL"))
         .await

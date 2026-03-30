@@ -106,7 +106,9 @@ pub fn generate_router(state: EngineState, public_path: &str) -> Router {
     let frontend_service = get_service(ServeDir::new(public_path))
         .handle_error(|_| async { StatusCode::INTERNAL_SERVER_ERROR });
 
-    Router::new().nest("/api", api_router).fallback_service(frontend_service)
+    Router::new()
+        .nest("/api", api_router)
+        .fallback_service(frontend_service)
 }
 
 #[derive(thiserror::Error, Debug)]
