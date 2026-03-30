@@ -1,5 +1,5 @@
-import type { CommentMeta } from "../comment";
-import type { ImgMeta } from "../image";
+import type { CommentMeta } from "../comment.js";
+import type { ImgMeta } from "../image.js";
 
 export type ImagePosted = ImgMeta & {
 	type: "ImagePosted";

@@ -1,6 +1,6 @@
-import { gen_authorization, URLManager } from "../../shared/api/url_manager";
-import { Config } from "../../shared/config";
-import { User } from "../../shared/user";
+import { gen_authorization, URLManager } from "../../shared/api/url_manager.js";
+import { Config } from "../../shared/config.js";
+import { User } from "../../shared/user.js";
 
 type PostRoomResp = {
 	room_id: string | null;

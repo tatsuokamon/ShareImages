@@ -1,14 +1,14 @@
-import { type ImgMeta } from "./image";
-import { type CommentMeta } from "./comment";
-import type { Post } from "./post";
-import { Config } from "./config";
+import { type ImgMeta } from "./image.js";
+import { type CommentMeta } from "./comment.js";
+import type { Post } from "./post.js";
+import { Config } from "./config.js";
 import type {
 	Actions,
 	GetURLResp,
 	PostCommentPayload,
 	PostImgPayload,
-} from "./actions";
-import type { Room } from "./room";
+} from "./actions.js";
+import type { Room } from "./room.js";
 
 export type Controller<Source> = {
 	create(src: Source): HTMLElement;

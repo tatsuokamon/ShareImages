@@ -1,4 +1,4 @@
-import { Config } from "../config";
+import { Config } from "../config.js";
 
 export const gen_authorization = (token: string): string => {
 	return `Bearer ${token}`;

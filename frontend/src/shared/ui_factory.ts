@@ -1,5 +1,5 @@
-import type { Room } from "./room";
-import { Config } from "./config";
+import type { Room } from "./room.js";
+import { Config } from "./config.js";
 
 export const create_icon = (display_name: string | null) => {
 	const icon = document.createElement("div");

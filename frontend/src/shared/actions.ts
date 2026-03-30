@@ -1,7 +1,7 @@
-import { User } from "./user";
-import { Room } from "./room";
-import { gen_authorization, type BanControlQuery } from "./api/url_manager";
-import { fetch_with_token, URLManager } from "./api/url_manager";
+import { User } from "./user.js";
+import { Room } from "./room.js";
+import { gen_authorization, type BanControlQuery } from "./api/url_manager.js";
+import { fetch_with_token, URLManager } from "./api/url_manager.js";
 
 export class Actions {
 	user: User;

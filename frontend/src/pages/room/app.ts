@@ -3,9 +3,9 @@ import {
 	PostUIManager,
 	RoomDOMManager,
 	type Controller,
-} from "../../shared/ui_manager";
-import { type ImgMeta } from "../../shared/image";
-import { Actions } from "../../shared/actions";
+} from "../../shared/ui_manager.js";
+import { type ImgMeta } from "../../shared/image.js";
+import { Actions } from "../../shared/actions.js";
 import {
 	create_bad_button,
 	create_comment,
@@ -22,16 +22,16 @@ import {
 	wrap_as_img_card,
 	wrap_as_meta,
 	wrap_as_post,
-} from "../../shared/ui_factory";
-import { Config } from "../../shared/config";
-import type { CommentMeta } from "../../shared/comment";
-import { User } from "../../shared/user";
-import { Room } from "../../shared/room";
-import { MessageDomManager } from "../../shared/ui_manager";
-import { URLManager } from "../../shared/api/url_manager";
-import { post_event_handler } from "../../shared/realtime/ws_handler";
-import { get_initial_posts } from "../../shared/post";
-import type { WsServerEvent } from "../../shared/realtime/ws_client";
+} from "../../shared/ui_factory.js";
+import { Config } from "../../shared/config.js";
+import type { CommentMeta } from "../../shared/comment.js";
+import { User } from "../../shared/user.js";
+import { Room } from "../../shared/room.js";
+import { MessageDomManager } from "../../shared/ui_manager.js";
+import { URLManager } from "../../shared/api/url_manager.js";
+import { post_event_handler } from "../../shared/realtime/ws_handler.js";
+import { get_initial_posts } from "../../shared/post.js";
+import type { WsServerEvent } from "../../shared/realtime/ws_client.js";
 
 const img_creater = (src: ImgMeta, actions: Actions): HTMLElement => {
 	// meta creater

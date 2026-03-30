@@ -1,5 +1,5 @@
-import { URLManager } from "./api/url_manager";
-import { Config } from "./config";
+import { URLManager } from "./api/url_manager.js";
+import { Config } from "./config.js";
 
 export class User {
 	id = "";

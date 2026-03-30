@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
 
 ########################################
@@ -109,7 +107,7 @@ services:
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
 
-      END_POINT_URL: ${END_POINT_URL}
+      ENDPOINT_URL: ${ENDPOINT_URL}
       BUCKET_NAME: ${BUCKET_NAME}
 
       EXPIRES_IN: ${EXPIRES_IN}

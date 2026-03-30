@@ -3,8 +3,8 @@ import {
 	type GetRoomQuery,
 	type GetBanQuery,
 	gen_authorization,
-} from "./api/url_manager";
-import type { User } from "./user";
+} from "./api/url_manager.js";
+import type { User } from "./user.js";
 
 type GetRoomResult = {
 	room_id: string | null;

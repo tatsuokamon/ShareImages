@@ -1,6 +1,6 @@
-import { gen_authorization, URLManager } from "./api/url_manager";
-import type { CommentMeta } from "./comment";
-import type { ImgMeta } from "./image";
+import { gen_authorization, URLManager } from "./api/url_manager.js";
+import type { CommentMeta } from "./comment.js";
+import type { ImgMeta } from "./image.js";
 
 export type Post = ImgMeta | CommentMeta;
 

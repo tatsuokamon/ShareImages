@@ -1,13 +1,13 @@
-import { Config } from "../config";
-import type { ImgMeta } from "../image";
-import type { Room } from "../room";
+import { Config } from "../config.js";
+import type { ImgMeta } from "../image.js";
+import type { Room } from "../room.js";
 import type {
 	BanDOMManager,
 	BanSrc,
 	MessageDomManager,
 	RoomDOMManager,
-} from "../ui_manager";
-import type { WsServerEvent } from "./ws_client";
+} from "../ui_manager.js";
+import type { WsServerEvent } from "./ws_client.js";
 
 export const post_event_handler = (
 	e: WsServerEvent,
