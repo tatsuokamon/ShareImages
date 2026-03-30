@@ -4,15 +4,12 @@
 		<meta charset="UTF-8" />
 		<link href="/styles/index.css" rel="stylesheet" />
 	</head>
-		<script type="module" src="/dist/pages/admin_room/app.js"></script>
-		<script>
-			window.onload = () => {
-				import { App } from "./app";
+	<script type="module">
+		import { App } from "/dist/pages/admin_room/app.js";
 
-				const app = new App();
-				await app.init()
-			}
-		</script>
+		const app = new App();
+		await app.init();
+	</script>
 
 	<body>
 		<div class="navbar">Share Images</div>
@@ -55,6 +52,5 @@
 				</div>
 			</div>
 		</div>
-
 	</body>
 </html>

@@ -3,16 +3,11 @@
 	<head>
 		<meta charset="UTF-8" />
 		<link href="/styles/room.css" rel="stylesheet" />
-		<script type="module" src="/dist/pages/room/app.js"></script>
-		<script>
-			const params = new URLSearchParams(location.search);
-			window.onload = () => {
-				import { App } from "./app";
-				const keyword = params.get("keyword");
+		<script type="module">
+			import { App } from "/dist/pages/room/app.js";
 
-				const app = new App(keyword);
-				await app.init()
-			}
+			const app = new App();
+			await app.init();
 		</script>
 	</head>
 	<body>
