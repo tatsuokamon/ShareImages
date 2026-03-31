@@ -8,7 +8,7 @@ use uuid::Uuid;
 
 use crate::{
     engine::{
-        EngineErr, EngineState, auth::AuthUser, generate_user_identifier, right_control::User,
+        EngineErr, EngineState, auth::AuthUser, generate_user_identifier, right_control::{User, AccessControl},
     },
     repository::{self, update_post_comment_status},
     ws::broadcast,
@@ -36,8 +36,8 @@ async fn post_comment_inner(
         room_id: q.room_id,
     };
 
-    if !user.can_post_comment(&state).await? {
-        return Ok(axum::http::StatusCode::FORBIDDEN);
+    if let AccessControl::Denied(status) = user.can_post_comment(&state).await? {
+        return Ok(status);
     }
 
     let identifier = generate_user_identifier(user.user_id);
@@ -58,7 +58,7 @@ async fn post_comment_inner(
         user.room_id,
         crate::ws::ServerEvent::CommentPosted {
             id: id,
-            display_name: payload.display_name.unwrap_or("無名".to_string()),
+            display_name: payload.display_name,
             content: payload.content,
             user_identifier: identifier,
             created_at: chrono::Utc::now().timestamp(),
@@ -99,8 +99,8 @@ async fn delete_comment_inner(
         room_id: q.room_id,
     };
 
-    if !user.can_delete_comment(&state, q.comment_id).await? {
-        return Ok(axum::http::StatusCode::FORBIDDEN);
+    if let AccessControl::Denied(status) = user.can_delete_comment(&state, q.comment_id).await? {
+        return Ok(status);
     }
 
     repository::delete_comment(&state.db, q.comment_id).await?;

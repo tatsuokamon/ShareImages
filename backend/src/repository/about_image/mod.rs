@@ -111,12 +111,9 @@ pub async fn get_posted_imgs(
     room_id: Uuid,
 ) -> Result<Vec<images::Model>, RepositoryErr> {
     Ok(images::Entity::find()
-        .join(
-            sea_orm::JoinType::InnerJoin,
-            images::Relation::Room.def(),
-        )
+        .join(sea_orm::JoinType::InnerJoin, images::Relation::Room.def())
         .filter(room::Column::Id.eq(room_id))
-        .filter(images::Column::DeletedAt.eq(None as Option<DateTime<Utc>>))
+        .filter(images::Column::DeletedAt.is_null())
         .all(db)
         .await?)
 }
@@ -198,11 +195,13 @@ pub async fn generate_presigned_url(
     bucket: &str,
     object_key: &str,
     expires_in: u64,
+    content_type: &str,
 ) -> Result<String, RepositoryErr> {
     let presigned = client
         .put_object()
         .bucket(bucket)
         .key(object_key)
+        .content_type(content_type)
         .presigned(aws_sdk_s3::presigning::PresigningConfig::expires_in(
             Duration::from_secs(expires_in),
         )?)

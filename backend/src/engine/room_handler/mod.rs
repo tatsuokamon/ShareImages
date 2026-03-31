@@ -5,17 +5,15 @@ use axum::{
 };
 use base64::{
     Engine,
-    alphabet::URL_SAFE,
-    prelude::{BASE64_STANDARD, BASE64_URL_SAFE},
+    prelude::BASE64_URL_SAFE,
 };
 use rand::Rng;
-use redis::FromRedisValue;
-use sea_orm::{ConnectionTrait, DatabaseConnection};
+use sea_orm::ConnectionTrait;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::{
-    engine::{EngineErr, EngineState, JsonResponse, auth::AuthUser, right_control::User},
+    engine::{EngineErr, EngineState, JsonResponse, auth::AuthUser, right_control::{User, AccessControl}},
     repository::{
         self, check_if_he_is_authorized, check_is_keyword_available, generate_room,
         get_room_id_from_keyword,
@@ -182,8 +180,8 @@ async fn delete_room_inner(
         user_id: auth.user_id,
         room_id: q.room_id,
     };
-    if !user.can_delete_room(&state).await? {
-        return Ok(axum::http::StatusCode::FORBIDDEN);
+    if let AccessControl::Denied(status) = user.can_delete_room(&state).await? {
+        return Ok(status);
     }
 
     repository::delete_room(&state.db, q.room_id).await?;

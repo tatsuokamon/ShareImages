@@ -52,10 +52,7 @@ pub async fn get_posted_comments(
     room_id: Uuid,
 ) -> Result<Vec<comment::Model>, RepositoryErr> {
     Ok(comment::Entity::find()
-        .join(
-            sea_orm::JoinType::InnerJoin,
-            comment::Relation::Room.def(),
-        )
+        .join(sea_orm::JoinType::InnerJoin, comment::Relation::Room.def())
         .filter(room::Column::Id.eq(room_id))
         .filter(comment::Column::DeletedAt.is_null())
         .all(db)

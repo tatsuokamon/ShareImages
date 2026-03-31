@@ -9,8 +9,10 @@ use uuid::Uuid;
 
 use crate::{
     engine::{
-        EngineErr, EngineState, JsonResponse, auth::AuthUser, generate_user_identifier,
-        right_control::User,
+        EngineErr, EngineState, JsonResponse,
+        auth::AuthUser,
+        generate_user_identifier,
+        right_control::{AccessControl, User},
     },
     repository::{
         self, add_presigned_url_key, commit_img, generate_object_key, generate_presigned_url,
@@ -22,6 +24,7 @@ use crate::{
 #[derive(Deserialize)]
 pub struct GetURLQuery {
     pub room_id: Uuid,
+    pub content_type: String,
 }
 
 #[derive(Serialize)]
@@ -46,9 +49,11 @@ async fn get_presigned_url_inner(
         room_id: q.room_id,
     };
 
-    if !user.can_get_presigned_url(&state).await? {
+    if let AccessControl::Denied(status) =
+        user.can_get_presigned_url(&q.content_type, &state).await?
+    {
         return Ok((
-            axum::http::StatusCode::FORBIDDEN,
+            status,
             Json(GetURLResp {
                 presigned_url: None,
                 key: None,
@@ -63,6 +68,7 @@ async fn get_presigned_url_inner(
         &state.bucket_name,
         &obj_key,
         state.expires_in,
+        &q.content_type,
     )
     .await?;
 
@@ -123,8 +129,8 @@ async fn post_img_inner(
         room_id: q.room_id,
     };
 
-    if !user.can_post_img(&state).await? {
-        return Ok(axum::http::StatusCode::FORBIDDEN);
+    if let AccessControl::Denied(status) = user.can_post_img(&state).await? {
+        return Ok(status);
     };
 
     let mut conn = state.pool.get().await?;
@@ -155,7 +161,7 @@ async fn post_img_inner(
             id: img_id,
             title: payload.title,
             score: 0,
-            display_name: payload.display_name.unwrap_or("無名".to_string()),
+            display_name: payload.display_name,
             user_identifier: identifier,
             object_key: object_key,
             created_at: chrono::Utc::now().timestamp(),
@@ -196,8 +202,8 @@ async fn delete_img_inner(
         user_id: auth.user_id,
     };
 
-    if !user.can_delete_img(&state, q.img_id).await? {
-        return Ok(axum::http::StatusCode::FORBIDDEN);
+    if let AccessControl::Denied(status) = user.can_delete_img(&state, q.img_id).await? {
+        return Ok(status);
     }
 
     repository::delete_img(&state.db, q.img_id).await?;

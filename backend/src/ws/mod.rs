@@ -12,7 +12,7 @@ pub enum ServerEvent {
         id: Uuid,
         title: Option<String>,
         score: i32,
-        display_name: String,
+        display_name: Option<String>,
         user_identifier: String,
         object_key: String,
         created_at: i64,
@@ -24,7 +24,7 @@ pub enum ServerEvent {
 
     CommentPosted {
         id: Uuid,
-        display_name: String,
+        display_name: Option<String>,
         content: String,
         user_identifier: String,
         created_at: i64,

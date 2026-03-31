@@ -6,7 +6,7 @@ use axum::{
 use uuid::Uuid;
 
 use crate::{
-    engine::{EngineErr, EngineState, auth::AuthUser, right_control::User},
+    engine::{EngineErr, EngineState, auth::AuthUser, right_control::{User, AccessControl}},
     repository::{self, get_all_banned_users},
     ws::broadcast,
 };
@@ -28,8 +28,8 @@ async fn post_ban_user_inner(
         room_id: q.room_id,
     };
 
-    if !user.can_ban_user(&state).await? {
-        return Ok(axum::http::StatusCode::FORBIDDEN);
+    if let AccessControl::Denied(status) = user.can_ban_user(&state).await? {
+        return Ok(status);
     }
 
     // exectute
@@ -73,8 +73,8 @@ async fn delete_ban_user_inner(
         room_id: q.room_id,
     };
 
-    if !user.can_ban_user(&state).await? {
-        return Ok(axum::http::StatusCode::FORBIDDEN);
+    if let AccessControl::Denied(status) = user.can_ban_user(&state).await? {
+        return Ok(status);
     }
 
     // exectute

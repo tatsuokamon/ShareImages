@@ -3,13 +3,11 @@ use axum::{
     extract::{Query, State},
     response::IntoResponse,
 };
-use bb8::RunError;
-use redis::RedisError;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{
-    engine::{EngineErr, EngineState, auth::AuthUser, right_control::User},
+    engine::{EngineErr, EngineState, auth::AuthUser, right_control::{User, AccessControl}},
     repository::{check_if_img_vote_exists, upsert_img_vote},
     ws::broadcast,
 };
@@ -51,8 +49,8 @@ async fn _vote_inner(
         room_id: q.room_id,
     };
 
-    if !user.can_vote(&state, payload.img_id).await? {
-        return Ok(axum::http::StatusCode::FORBIDDEN);
+    if let AccessControl::Denied(status) = user.can_vote(&state, payload.img_id).await? {
+        return Ok(status);
     }
 
     let img_vote_op = check_if_img_vote_exists(&state.db, auth.user_id, payload.img_id).await?;

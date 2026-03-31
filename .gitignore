@@ -2,3 +2,6 @@ dev/
 backend/target/
 backend/src/target
 backend/migration/target/
+backend/public
+backend/.env
+frontend/public/dist

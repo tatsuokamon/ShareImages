@@ -50,7 +50,10 @@ async fn main() {
         .endpoint_url(get_env!("ENDPOINT_URL"))
         .load()
         .await;
-    let sdk_client = aws_sdk_s3::Client::new(&config);
+    let s3_config = aws_sdk_s3::config::Builder::from(&config)
+        .force_path_style(true)
+        .build();
+    let sdk_client = aws_sdk_s3::Client::from_conf(s3_config);
 
     let redis_manager =
         RedisConnectionManager::new(get_env!("REDIS_URL")).expect("failed to connect redis server");
