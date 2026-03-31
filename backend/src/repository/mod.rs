@@ -61,10 +61,10 @@ pub enum RepositoryErr {
 
 pub async fn check_if_he_exists(
     db: &impl ConnectionTrait,
-    user_id: &Uuid,
+    user_id: Uuid,
 ) -> Result<bool, RepositoryErr> {
     Ok(user::Entity::find()
-        .filter(user::Column::Id.eq(user_id.to_string()))
+        .filter(user::Column::Id.eq(user_id))
         .one(db)
         .await?
         .is_some())
@@ -72,17 +72,17 @@ pub async fn check_if_he_exists(
 
 pub async fn check_if_he_is_authorized(
     db: &impl ConnectionTrait,
-    user_id: &Uuid,
-    room_id: &Uuid,
+    user_id: Uuid,
+    room_id: Uuid,
 ) -> Result<bool, RepositoryErr> {
     Ok(
         if let Some(m) = room::Entity::find()
-            .filter(room::Column::Id.eq(room_id.to_string()))
-            .filter(room::Column::DeletedAt.eq(None as Option<DateTime<Utc>>))
+            .filter(room::Column::Id.eq(room_id))
+            .filter(room::Column::DeletedAt.is_null())
             .one(db)
             .await?
         {
-            m.master_id == *user_id
+            m.master_id == user_id
         } else {
             false
         },
@@ -101,7 +101,7 @@ pub async fn generate_user(db: &impl ConnectionTrait) -> Result<Uuid, Repository
 
 pub async fn find_user_id_with_img_id(
     db: &impl ConnectionTrait,
-    img_id: &Uuid,
+    img_id: Uuid,
 ) -> Result<Option<Uuid>, RepositoryErr> {
     Ok(
         if let Some(m) = user::Entity::find()
@@ -109,7 +109,7 @@ pub async fn find_user_id_with_img_id(
                 sea_orm::JoinType::InnerJoin,
                 user::Relation::Images.def().rev(),
             )
-            .filter(images::Column::Id.eq(img_id.to_string()))
+            .filter(images::Column::Id.eq(img_id))
             .one(db)
             .await?
         {
@@ -122,15 +122,15 @@ pub async fn find_user_id_with_img_id(
 
 pub async fn check_if_room_has_img(
     db: &impl ConnectionTrait,
-    img_id: &Uuid,
-    room_id: &Uuid,
+    img_id: Uuid,
+    room_id: Uuid,
 ) -> Result<bool, RepositoryErr> {
     if let Some(m) = images::Entity::find()
-        .filter(images::Column::Id.eq(img_id.to_string()))
+        .filter(images::Column::Id.eq(img_id))
         .one(db)
         .await?
     {
-        return Ok(m.room_id == *room_id);
+        return Ok(m.room_id == room_id);
     };
 
     Ok(false)
@@ -138,15 +138,15 @@ pub async fn check_if_room_has_img(
 
 pub async fn check_if_room_has_comment(
     db: &impl ConnectionTrait,
-    comment_id: &Uuid,
-    room_id: &Uuid,
+    comment_id: Uuid,
+    room_id: Uuid,
 ) -> Result<bool, RepositoryErr> {
     if let Some(m) = comment::Entity::find()
-        .filter(comment::Column::Id.eq(comment_id.to_string()))
+        .filter(comment::Column::Id.eq(comment_id))
         .one(db)
         .await?
     {
-        return Ok(m.room_id == *room_id);
+        return Ok(m.room_id == room_id);
     };
 
     Ok(false)

@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 use crate::repository::RepositoryErr;
 
-fn room_ban_tag(room_id: &Uuid) -> String {
+fn room_ban_tag(room_id: Uuid) -> String {
     format!("room_ban:{}", room_id)
 }
 
@@ -18,7 +18,7 @@ fn global_ban_tag() -> String {
 // if room id not specified, target will be banned from all room
 pub async fn ban_user(
     conn: &mut PooledConnection<'_, RedisConnectionManager>,
-    room_id: &Uuid,
+    room_id: Uuid,
     user_identifier: &str,
 ) -> Result<(), RepositoryErr> {
     Ok(conn
@@ -48,7 +48,7 @@ pub async fn start_recognize_him(
 
 pub async fn resolve_ban(
     conn: &mut PooledConnection<'_, RedisConnectionManager>,
-    room_id: &Uuid,
+    room_id: Uuid,
     user_identifier: &str,
 ) -> Result<(), RepositoryErr> {
     Ok(conn
@@ -58,7 +58,7 @@ pub async fn resolve_ban(
 
 pub async fn check_if_he_is_banned(
     conn: &mut PooledConnection<'_, RedisConnectionManager>,
-    room_id: &Uuid,
+    room_id: Uuid,
     user_identifier: &str,
 ) -> Result<bool, RepositoryErr> {
     Ok(conn
@@ -77,7 +77,7 @@ pub async fn get_all_banned_users(
 ) -> Result<Option<Vec<String>>, RepositoryErr> {
     Ok(Some(
         if let Some(v) = conn
-            .hgetall::<String, Option<HashMap<String, String>>>(room_ban_tag(&room_id))
+            .hgetall::<String, Option<HashMap<String, String>>>(room_ban_tag(room_id))
             .await?
         {
             v.into_keys().collect()

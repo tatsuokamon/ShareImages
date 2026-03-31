@@ -12,11 +12,11 @@ use crate::{entity::room, repository::RepositoryErr};
 
 pub async fn check_if_room_exists(
     db: &impl ConnectionTrait,
-    room_id: &Uuid,
+    room_id: Uuid,
 ) -> Result<bool, RepositoryErr> {
     Ok(room::Entity::find()
-        .filter(room::Column::Id.eq(room_id.to_string()))
-        .filter(room::Column::DeletedAt.eq(None as Option<DateTime<chrono::Utc>>))
+        .filter(room::Column::Id.eq(room_id))
+        .filter(room::Column::DeletedAt.is_null())
         .one(db)
         .await?
         .is_some())
@@ -57,7 +57,7 @@ pub async fn get_room_id_from_keyword(
     Ok(
         if let Some(m) = room::Entity::find()
             .filter(room::Column::Keyword.eq(keyword))
-            .filter(room::Column::DeletedAt.eq(None as Option<chrono::DateTime<chrono::Utc>>))
+            .filter(room::Column::DeletedAt.is_null())
             .one(db)
             .await?
         {
@@ -68,9 +68,9 @@ pub async fn get_room_id_from_keyword(
     )
 }
 
-pub async fn delete_room(db: &impl ConnectionTrait, room_id: &Uuid) -> Result<(), RepositoryErr> {
+pub async fn delete_room(db: &impl ConnectionTrait, room_id: Uuid) -> Result<(), RepositoryErr> {
     if let Some(room) = room::Entity::find()
-        .filter(room::Column::Id.eq(room_id.to_string()))
+        .filter(room::Column::Id.eq(room_id))
         .one(db)
         .await?
     {

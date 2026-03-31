@@ -40,7 +40,7 @@ async fn post_comment_inner(
         return Ok(axum::http::StatusCode::FORBIDDEN);
     }
 
-    let identifier = generate_user_identifier(&user.user_id);
+    let identifier = generate_user_identifier(user.user_id);
     let id = repository::post_comment(
         &state.db,
         user.room_id,
@@ -51,7 +51,7 @@ async fn post_comment_inner(
     )
     .await?;
     let mut conn = state.pool.get().await?;
-    update_post_comment_status(&mut conn, &auth.user_id, state.post_comment_timeout).await?;
+    update_post_comment_status(&mut conn, auth.user_id, state.post_comment_timeout).await?;
 
     broadcast(
         &state.manager,
@@ -103,7 +103,7 @@ async fn delete_comment_inner(
         return Ok(axum::http::StatusCode::FORBIDDEN);
     }
 
-    repository::delete_comment(&state.db, &q.comment_id).await?;
+    repository::delete_comment(&state.db, q.comment_id).await?;
     broadcast(
         &state.manager,
         q.room_id,

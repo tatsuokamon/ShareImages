@@ -23,8 +23,8 @@ pub enum GetUserIdErr {
 
 async fn _get_user_id_inner(state: EngineState) -> Result<GetUserIdStruct, GetUserIdErr> {
     let user_id = generate_user(&state.db).await?;
-    let user_identifier = generate_user_identifier(&user_id);
-    let token = generate_token(&user_id, &state.secret);
+    let user_identifier = generate_user_identifier(user_id);
+    let token = generate_token(user_id, &state.secret);
 
     Ok(GetUserIdStruct {
         user_id: Some(user_id),
@@ -35,6 +35,7 @@ async fn _get_user_id_inner(state: EngineState) -> Result<GetUserIdStruct, GetUs
 }
 
 pub async fn get_user_id(State(state): State<EngineState>) -> impl IntoResponse {
+    tracing::error!("get_user_id");
     match _get_user_id_inner(state).await {
         Ok(res) => (axum::http::StatusCode::OK, Json(res)),
         Err(e) => {

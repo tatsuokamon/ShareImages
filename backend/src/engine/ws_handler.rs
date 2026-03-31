@@ -18,7 +18,7 @@ pub async fn ws_handler(
     Query(q): Query<WsParams>,
     State(state): State<EngineState>,
 ) -> impl IntoResponse {
-    match check_if_he_exists(&state.db, &q.user_id).await {
+    match check_if_he_exists(&state.db, q.user_id).await {
         Ok(true) => {
             if let Some(room) = state.manager.rooms.get(&q.room_id) {
                 if room.get(&q.user_id).is_some() {

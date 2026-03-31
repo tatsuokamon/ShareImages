@@ -55,7 +55,7 @@ async fn _vote_inner(
         return Ok(axum::http::StatusCode::FORBIDDEN);
     }
 
-    let img_vote_op = check_if_img_vote_exists(&state.db, &auth.user_id, &payload.img_id).await?;
+    let img_vote_op = check_if_img_vote_exists(&state.db, auth.user_id, payload.img_id).await?;
     let is_new = img_vote_op.is_none();
     let changed = if is_new {
         false

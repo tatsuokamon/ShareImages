@@ -75,7 +75,7 @@ pub fn join_room(manager: &WsManager, room_id: Uuid, client_id: Uuid, tx: Tx) {
         .insert(client_id, tx);
 }
 
-pub fn leave_room(manager: &WsManager, room_id: Uuid, client_id: &Uuid) {
+pub fn leave_room(manager: &WsManager, room_id: Uuid, client_id: Uuid) {
     if let Some(room) = manager.rooms.get(&room_id) {
         room.remove(&client_id);
 
@@ -99,7 +99,7 @@ pub fn broadcast(manager: &WsManager, room_id: Uuid, event: ServerEvent) {
     }
 
     for id in to_remove {
-        leave_room(manager, room_id, &id);
+        leave_room(manager, room_id, id);
     }
 }
 
@@ -138,5 +138,5 @@ pub async fn handle_socket(socket: WebSocket, room_id: Uuid, client_id: Uuid, ma
         _ = recv_task => {},
     }
 
-    leave_room(manager, room_id, &client_id);
+    leave_room(manager, room_id, client_id);
 }

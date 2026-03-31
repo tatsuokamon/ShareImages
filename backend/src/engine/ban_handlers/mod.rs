@@ -34,7 +34,7 @@ async fn post_ban_user_inner(
 
     // exectute
     let mut conn = state.pool.get().await?;
-    repository::ban_user(&mut conn, &q.room_id, &q.user_identifier).await?;
+    repository::ban_user(&mut conn, q.room_id, &q.user_identifier).await?;
 
     // broadcast
     broadcast(
@@ -79,7 +79,7 @@ async fn delete_ban_user_inner(
 
     // exectute
     let mut conn = state.pool.get().await?;
-    repository::resolve_ban(&mut conn, &q.room_id, &q.user_identifier).await?;
+    repository::resolve_ban(&mut conn, q.room_id, &q.user_identifier).await?;
 
     // broadcast
     broadcast(

@@ -4,12 +4,13 @@
 		<meta charset="UTF-8" />
 		<link href="/styles/index.css" rel="stylesheet" />
 	</head>
-	<script type="module">
-		import { App } from "/dist/pages/admin_room/app.js";
+		<script type="module">
+			import { App } from "/dist/pages/home/app.js";
 
-		const app = new App();
-		await app.init();
-	</script>
+			console.log("hello");
+			const app = new App();
+			await app.init()
+		</script>
 
 	<body>
 		<div class="navbar">Share Images</div>
@@ -52,5 +53,6 @@
 				</div>
 			</div>
 		</div>
+
 	</body>
 </html>

@@ -6,7 +6,7 @@ edition = "2024"
 [dependencies]
 aws-config = "1.8.14"
 aws-sdk-s3 = "1.124.0"
-axum = { version = "0.8.8", features = ["macros", "multipart", "ws"] }
+axum = { version = "0.8.8", features = ["macros", "multipart", "tokio", "ws"] }
 base64 = "0.22.1"
 bb8 = "0.9.1"
 bb8-redis = "0.26.0"

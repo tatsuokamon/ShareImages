@@ -17,7 +17,7 @@ pub async fn get_posted_img(
     Query(q): Query<GetPostedImgQuery>,
     State(state): State<EngineState>,
 ) -> impl IntoResponse {
-    match repository::get_posted_imgs(&state.db, &q.room_id).await {
+    match repository::get_posted_imgs(&state.db, q.room_id).await {
         Ok(v) => (axum::http::StatusCode::OK, Json(Some(v))),
         Err(e) => {
             tracing::error!("{e}");

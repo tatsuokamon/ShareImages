@@ -4,7 +4,6 @@ use axum::{
     Json, Router,
     http::StatusCode,
     middleware,
-    response::IntoResponse,
     routing::{self, get_service},
 };
 use bb8::{Pool, RunError};
@@ -60,7 +59,7 @@ pub struct EngineStateSrc {
 
 pub type EngineState = Arc<EngineStateSrc>;
 
-fn generate_user_identifier(user_id: &Uuid) -> String {
+fn generate_user_identifier(user_id: Uuid) -> String {
     format!("user-{:x}", sha2::Sha256::digest(user_id.as_bytes()))
 }
 
@@ -101,13 +100,19 @@ pub fn generate_router(state: EngineState, public_path: &str) -> Router {
         .route("/posted_comment", axum::routing::get(get_posted_comment))
         // about ws
         .route("/ws", axum::routing::get(ws_handler))
-        .layer(middleware::from_fn(rate_limit_middleware))
+        .layer(middleware::from_fn_with_state(
+            state.clone(),
+            rate_limit_middleware,
+        ))
         .with_state(state);
-    let frontend_service = get_service(ServeDir::new(public_path))
-        .handle_error(|_| async { StatusCode::INTERNAL_SERVER_ERROR });
+
+    let frontend_service = get_service(ServeDir::new(public_path)).handle_error(|_| async {
+        tracing::error!("handle error");
+        StatusCode::INTERNAL_SERVER_ERROR
+    });
 
     Router::new()
-        .nest("/api", api_router)
+        .nest("/api/", api_router)
         .fallback_service(frontend_service)
 }
 

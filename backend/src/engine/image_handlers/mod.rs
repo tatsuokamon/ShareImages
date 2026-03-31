@@ -57,7 +57,7 @@ async fn get_presigned_url_inner(
         ));
     }
 
-    let obj_key = generate_object_key(&q.room_id);
+    let obj_key = generate_object_key(q.room_id);
     let presigned_url = generate_presigned_url(
         &state.sdk_client,
         &state.bucket_name,
@@ -67,7 +67,7 @@ async fn get_presigned_url_inner(
     .await?;
 
     let key = gen_presigned_url_key(&presigned_url);
-    add_presigned_url_key(&mut conn, &auth.user_id, &key, &obj_key, state.expires_in).await?;
+    add_presigned_url_key(&mut conn, auth.user_id, &key, &obj_key, state.expires_in).await?;
 
     Ok((
         axum::http::StatusCode::OK,
@@ -128,13 +128,13 @@ async fn post_img_inner(
     };
 
     let mut conn = state.pool.get().await?;
-    let obj_key = get_object_key(&mut conn, &auth.user_id, &payload.key).await?;
+    let obj_key = get_object_key(&mut conn, auth.user_id, &payload.key).await?;
     if obj_key.is_none() {
         return Ok(axum::http::StatusCode::BAD_REQUEST);
     }
 
     let object_key = obj_key.unwrap();
-    let identifier = generate_user_identifier(&user.user_id);
+    let identifier = generate_user_identifier(user.user_id);
     let img_id = commit_img(
         &state.db,
         q.room_id,
@@ -146,7 +146,7 @@ async fn post_img_inner(
     )
     .await?;
 
-    update_commit_img_status(&mut conn, &auth.user_id, state.post_img_timeout).await?;
+    update_commit_img_status(&mut conn, auth.user_id, state.post_img_timeout).await?;
 
     broadcast(
         &state.manager,

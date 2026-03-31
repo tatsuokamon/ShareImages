@@ -13,16 +13,16 @@ use crate::{
     repository::RepositoryErr,
 };
 
-fn generate_redis_post_comment_tag(user_id: &Uuid) -> String {
+fn generate_redis_post_comment_tag(user_id: Uuid) -> String {
     format!("post-comment-{}", user_id)
 }
 
 pub async fn check_if_comment_exists(
     db: &impl ConnectionTrait,
-    comment_id: &Uuid,
+    comment_id: Uuid,
 ) -> Result<bool, RepositoryErr> {
     Ok(comment::Entity::find()
-        .filter(comment::Column::Id.eq(comment_id.to_string()))
+        .filter(comment::Column::Id.eq(comment_id))
         .one(db)
         .await?
         .is_some())
@@ -30,17 +30,17 @@ pub async fn check_if_comment_exists(
 
 pub async fn is_the_owner_of_comment(
     db: &impl ConnectionTrait,
-    comment_id: &Uuid,
-    user_id: &Uuid,
+    comment_id: Uuid,
+    user_id: Uuid,
 ) -> Result<bool, RepositoryErr> {
     Ok(
         if let Some(comm) = comment::Entity::find()
-            .filter(comment::Column::DeletedAt.eq(None as Option<DateTime<Utc>>))
-            .filter(comment::Column::Id.eq(comment_id.to_string()))
+            .filter(comment::Column::DeletedAt.is_null())
+            .filter(comment::Column::Id.eq(comment_id))
             .one(db)
             .await?
         {
-            comm.user_id == *user_id
+            comm.user_id == user_id
         } else {
             false
         },
@@ -49,22 +49,22 @@ pub async fn is_the_owner_of_comment(
 
 pub async fn get_posted_comments(
     db: &impl ConnectionTrait,
-    room_id: &Uuid,
+    room_id: Uuid,
 ) -> Result<Vec<comment::Model>, RepositoryErr> {
     Ok(comment::Entity::find()
         .join(
             sea_orm::JoinType::InnerJoin,
-            comment::Relation::Room.def().rev(),
+            comment::Relation::Room.def(),
         )
-        .filter(room::Column::Id.eq(room_id.to_string()))
-        .filter(comment::Column::DeletedAt.eq(None as Option<DateTime<Utc>>))
+        .filter(room::Column::Id.eq(room_id))
+        .filter(comment::Column::DeletedAt.is_null())
         .all(db)
         .await?)
 }
 
 pub async fn check_if_his_comment_waits_enough(
     conn: &mut PooledConnection<'_, RedisConnectionManager>,
-    user_id: &Uuid,
+    user_id: Uuid,
 ) -> Result<bool, RepositoryErr> {
     let post_comment_tag = generate_redis_post_comment_tag(user_id);
     Ok(conn
@@ -99,7 +99,7 @@ pub async fn post_comment(
 
 pub async fn update_post_comment_status(
     conn: &mut PooledConnection<'_, RedisConnectionManager>,
-    user_id: &Uuid,
+    user_id: Uuid,
     timeout: usize,
 ) -> Result<(), RepositoryErr> {
     let post_comment_tag = generate_redis_post_comment_tag(user_id);
@@ -118,10 +118,10 @@ pub async fn update_post_comment_status(
 
 pub async fn delete_comment(
     db: &impl ConnectionTrait,
-    comment_id: &Uuid,
+    comment_id: Uuid,
 ) -> Result<(), RepositoryErr> {
     if let Some(m) = comment::Entity::find()
-        .filter(comment::Column::Id.eq(comment_id.to_string()))
+        .filter(comment::Column::Id.eq(comment_id))
         .one(db)
         .await?
     {

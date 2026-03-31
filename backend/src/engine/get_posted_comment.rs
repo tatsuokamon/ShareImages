@@ -19,7 +19,7 @@ pub async fn get_posted_comment(
     Query(q): Query<GetPostedQuery>,
     State(state): State<EngineState>,
 ) -> impl IntoResponse {
-    match repository::get_posted_comments(&state.db, &q.room_id).await {
+    match repository::get_posted_comments(&state.db, q.room_id).await {
         Ok(result) => (axum::http::StatusCode::OK, Json(Some(result))),
 
         Err(e) => {

@@ -5,7 +5,7 @@ use hmac::{Hmac, Mac};
 use sha2::Sha256;
 use uuid::Uuid;
 
-pub fn generate_token(user_id: &Uuid, secret: &[u8]) -> String {
+pub fn generate_token(user_id: Uuid, secret: &[u8]) -> String {
     let mut mac = Hmac::<Sha256>::new_from_slice(secret).unwrap();
     mac.update(user_id.as_bytes());
 

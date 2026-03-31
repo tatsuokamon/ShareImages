@@ -102,7 +102,7 @@ async fn get_room_inner(
 ) -> Result<(axum::http::StatusCode, Json<GetRoomResult>), EngineErr> {
     Ok(
         if let Some(room_id) = get_room_id_from_keyword(&state.db, &q.keyword).await? {
-            let as_master = check_if_he_is_authorized(&state.db, &auth.user_id, &room_id).await?;
+            let as_master = check_if_he_is_authorized(&state.db, auth.user_id, room_id).await?;
             (
                 axum::http::StatusCode::OK,
                 Json(GetRoomResult {
@@ -118,6 +118,7 @@ async fn get_room_inner(
                 }),
             )
         } else {
+            tracing::info!("get room inner: Bad Request");
             (
                 axum::http::StatusCode::BAD_REQUEST,
                 Json(GetRoomResult {
@@ -185,7 +186,7 @@ async fn delete_room_inner(
         return Ok(axum::http::StatusCode::FORBIDDEN);
     }
 
-    repository::delete_room(&state.db, &q.room_id).await?;
+    repository::delete_room(&state.db, q.room_id).await?;
     broadcast(
         &state.manager,
         q.room_id,

@@ -13,17 +13,17 @@ use crate::{
 
 pub async fn check_if_img_vote_exists(
     db: &impl ConnectionTrait,
-    user_id: &Uuid,
-    img_id: &Uuid,
+    user_id: Uuid,
+    img_id: Uuid,
 ) -> Result<Option<image_vote::Model>, RepositoryErr> {
     Ok(image_vote::Entity::find()
         .join(
             sea_orm::JoinType::InnerJoin,
             image_vote::Relation::Images.def().rev(),
         )
-        .filter(images::Column::DeletedAt.eq(None as Option<chrono::DateTime<chrono::Utc>>))
-        .filter(image_vote::Column::UserId.eq(user_id.to_string()))
-        .filter(image_vote::Column::ImageId.eq(img_id.to_string()))
+        .filter(images::Column::DeletedAt.is_null())
+        .filter(image_vote::Column::UserId.eq(user_id))
+        .filter(image_vote::Column::ImageId.eq(img_id))
         .one(db)
         .await?)
 }
@@ -65,8 +65,8 @@ pub async fn vote_good(
     is_good: bool,
 ) -> Result<(), RepositoryErr> {
     if let Some(m) = image_vote::Entity::find()
-        .filter(image_vote::Column::UserId.eq(user_id.to_string()))
-        .filter(image_vote::Column::ImageId.eq(img_id.to_string()))
+        .filter(image_vote::Column::UserId.eq(user_id))
+        .filter(image_vote::Column::ImageId.eq(img_id))
         .one(db)
         .await?
     {

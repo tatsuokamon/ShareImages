@@ -34,6 +34,8 @@ macro_rules! get_env_with_parsing {
 
 #[tokio::main]
 async fn main() {
+    dotenv::dotenv().expect("failed to load .env");
+
     tracing_subscriber::fmt()
         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
         .init();

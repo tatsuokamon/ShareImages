@@ -16,21 +16,21 @@ use crate::{
     repository::RepositoryErr,
 };
 
-fn generate_redis_post_img_tag(user_id: &Uuid) -> String {
+fn generate_redis_post_img_tag(user_id: Uuid) -> String {
     format!("post-img-{}", user_id)
 }
 
-fn generate_redis_key_save(key: &str, user_id: &Uuid) -> String {
+fn generate_redis_key_save(key: &str, user_id: Uuid) -> String {
     format!("presigned:{user_id}:{key}")
 }
 
-pub fn generate_object_key(room_id: &Uuid) -> String {
+pub fn generate_object_key(room_id: Uuid) -> String {
     format!("{}/{}", room_id, Uuid::new_v4().to_string())
 }
 
 pub async fn get_object_key(
     conn: &mut PooledConnection<'_, RedisConnectionManager>,
-    user_id: &Uuid,
+    user_id: Uuid,
     key: &str,
 ) -> Result<Option<String>, RepositoryErr> {
     let redis_presigned_tag = generate_redis_key_save(key, user_id);
@@ -41,10 +41,10 @@ pub async fn get_object_key(
 
 pub async fn check_if_img_exists(
     db: &impl ConnectionTrait,
-    img_id: &Uuid,
+    img_id: Uuid,
 ) -> Result<bool, RepositoryErr> {
     Ok(images::Entity::find()
-        .filter(images::Column::Id.eq(img_id.to_string()))
+        .filter(images::Column::Id.eq(img_id))
         .one(db)
         .await?
         .is_some())
@@ -52,7 +52,7 @@ pub async fn check_if_img_exists(
 
 pub async fn add_presigned_url_key(
     conn: &mut PooledConnection<'_, RedisConnectionManager>,
-    user_id: &Uuid,
+    user_id: Uuid,
     key: &str,
     object_key: &str,
     expires_in: u64,
@@ -71,17 +71,17 @@ pub async fn add_presigned_url_key(
 
 pub async fn is_the_owner_of_image(
     db: &impl ConnectionTrait,
-    img_id: &Uuid,
-    user_id: &Uuid,
+    img_id: Uuid,
+    user_id: Uuid,
 ) -> Result<bool, RepositoryErr> {
     Ok(
         if let Some(img) = images::Entity::find()
-            .filter(images::Column::DeletedAt.eq(None as Option<DateTime<Utc>>))
-            .filter(images::Column::Id.eq(img_id.to_string()))
+            .filter(images::Column::DeletedAt.is_null())
+            .filter(images::Column::Id.eq(img_id))
             .one(db)
             .await?
         {
-            img.user_id == *user_id
+            img.user_id == user_id
         } else {
             false
         },
@@ -90,11 +90,11 @@ pub async fn is_the_owner_of_image(
 
 pub async fn check_if_img_deleted(
     db: &impl ConnectionTrait,
-    img_id: &Uuid,
+    img_id: Uuid,
 ) -> Result<bool, RepositoryErr> {
     Ok(
         if let Some(m) = images::Entity::find()
-            .filter(images::Column::Id.eq(img_id.to_string()))
+            .filter(images::Column::Id.eq(img_id))
             .one(db)
             .await?
             && m.deleted_at != None
@@ -108,14 +108,14 @@ pub async fn check_if_img_deleted(
 
 pub async fn get_posted_imgs(
     db: &impl ConnectionTrait,
-    room_id: &Uuid,
+    room_id: Uuid,
 ) -> Result<Vec<images::Model>, RepositoryErr> {
     Ok(images::Entity::find()
         .join(
             sea_orm::JoinType::InnerJoin,
-            images::Relation::Room.def().rev(),
+            images::Relation::Room.def(),
         )
-        .filter(room::Column::Id.eq(room_id.to_string()))
+        .filter(room::Column::Id.eq(room_id))
         .filter(images::Column::DeletedAt.eq(None as Option<DateTime<Utc>>))
         .all(db)
         .await?)
@@ -150,7 +150,7 @@ pub async fn commit_img(
 
 pub async fn update_commit_img_status(
     conn: &mut PooledConnection<'_, RedisConnectionManager>,
-    user_id: &Uuid,
+    user_id: Uuid,
     timeout: usize,
 ) -> Result<(), RepositoryErr> {
     let post_comment_tag = generate_redis_post_img_tag(user_id);
@@ -169,7 +169,7 @@ pub async fn update_commit_img_status(
 
 pub async fn check_if_his_img_waits_enough(
     conn: &mut PooledConnection<'_, RedisConnectionManager>,
-    user_id: &Uuid,
+    user_id: Uuid,
 ) -> Result<bool, RepositoryErr> {
     let post_img_tag = generate_redis_post_img_tag(user_id);
     Ok(conn
@@ -180,7 +180,7 @@ pub async fn check_if_his_img_waits_enough(
 
 pub async fn delete_img(db: &impl ConnectionTrait, img_id: Uuid) -> Result<(), RepositoryErr> {
     if let Some(m) = images::Entity::find()
-        .filter(images::Column::Id.eq(img_id.to_string()))
+        .filter(images::Column::Id.eq(img_id))
         .one(db)
         .await?
     {

@@ -16,8 +16,8 @@ use crate::{
 pub async fn check_if_he_can_take_action(
     db: &impl ConnectionTrait,
     conn: &mut PooledConnection<'_, RedisConnectionManager>,
-    user_id: &Uuid,
-    room_id: &Uuid,
+    user_id: Uuid,
+    room_id: Uuid,
 ) -> Result<bool, EngineErr> {
     let user_identifier = generate_user_identifier(user_id);
     Ok(
@@ -41,21 +41,21 @@ impl User {
     pub async fn can_get_presigned_url(&self, state: &EngineState) -> Result<bool, EngineErr> {
         let mut conn = state.pool.get().await?;
         Ok(
-            check_if_he_can_take_action(&state.db, &mut conn, &self.user_id, &self.room_id).await?
-                && check_if_his_img_waits_enough(&mut conn, &self.user_id).await?,
+            check_if_he_can_take_action(&state.db, &mut conn, self.user_id, self.room_id).await?
+                && check_if_his_img_waits_enough(&mut conn, self.user_id).await?,
         )
     }
 
     pub async fn can_post_img(&self, state: &EngineState) -> Result<bool, EngineErr> {
         let mut conn = state.pool.get().await?;
-        Ok(check_if_he_can_take_action(&state.db, &mut conn, &self.user_id, &self.room_id).await?)
+        Ok(check_if_he_can_take_action(&state.db, &mut conn, self.user_id, self.room_id).await?)
     }
 
     pub async fn can_post_comment(&self, state: &EngineState) -> Result<bool, EngineErr> {
         let mut conn = state.pool.get().await?;
         Ok(
-            check_if_he_can_take_action(&state.db, &mut conn, &self.user_id, &self.room_id).await?
-                && check_if_his_comment_waits_enough(&mut conn, &self.user_id).await?,
+            check_if_he_can_take_action(&state.db, &mut conn, self.user_id, self.room_id).await?
+                && check_if_his_comment_waits_enough(&mut conn, self.user_id).await?,
         )
     }
 
@@ -64,17 +64,17 @@ impl User {
         state: &EngineState,
         img_id: Uuid,
     ) -> Result<bool, EngineErr> {
-        if !check_if_room_exists(&state.db, &self.room_id).await? {
+        if !check_if_room_exists(&state.db, self.room_id).await? {
             return Ok(false);
         }
         // master of room
-        if check_if_he_is_authorized(&state.db, &self.user_id, &self.room_id).await?
-            && check_if_room_has_img(&state.db, &img_id, &self.room_id).await?
+        if check_if_he_is_authorized(&state.db, self.user_id, self.room_id).await?
+            && check_if_room_has_img(&state.db, img_id, self.room_id).await?
         {
             return Ok(true);
         }
 
-        if is_the_owner_of_image(&state.db, &img_id, &self.user_id).await? {
+        if is_the_owner_of_image(&state.db, img_id, self.user_id).await? {
             return Ok(true);
         }
 
@@ -86,17 +86,17 @@ impl User {
         state: &EngineState,
         comment_id: Uuid,
     ) -> Result<bool, EngineErr> {
-        if !check_if_room_exists(&state.db, &self.room_id).await? {
+        if !check_if_room_exists(&state.db, self.room_id).await? {
             return Ok(false);
         }
         // master of room
-        if check_if_he_is_authorized(&state.db, &self.user_id, &self.room_id).await?
-            && check_if_room_has_comment(&state.db, &comment_id, &self.room_id).await?
+        if check_if_he_is_authorized(&state.db, self.user_id, self.room_id).await?
+            && check_if_room_has_comment(&state.db, comment_id, self.room_id).await?
         {
             return Ok(true);
         }
 
-        if is_the_owner_of_comment(&state.db, &comment_id, &self.user_id).await? {
+        if is_the_owner_of_comment(&state.db, comment_id, self.user_id).await? {
             return Ok(true);
         }
 
@@ -105,7 +105,7 @@ impl User {
 
     pub async fn can_ban_user(&self, state: &EngineState) -> Result<bool, EngineErr> {
         // master of room
-        if check_if_he_is_authorized(&state.db, &self.user_id, &self.room_id).await? {
+        if check_if_he_is_authorized(&state.db, self.user_id, self.room_id).await? {
             return Ok(true);
         }
 
@@ -113,7 +113,7 @@ impl User {
     }
 
     pub async fn can_delete_room(&self, state: &EngineState) -> Result<bool, EngineErr> {
-        if check_if_he_is_authorized(&state.db, &self.user_id, &self.room_id).await? {
+        if check_if_he_is_authorized(&state.db, self.user_id, self.room_id).await? {
             return Ok(true);
         }
 
@@ -123,8 +123,8 @@ impl User {
     pub async fn can_vote(&self, state: &EngineState, img_id: Uuid) -> Result<bool, EngineErr> {
         let mut conn = state.pool.get().await?;
         Ok(
-            check_if_he_can_take_action(&state.db, &mut conn, &self.user_id, &self.room_id).await?
-                && check_if_room_has_img(&state.db, &img_id, &self.room_id).await?,
+            check_if_he_can_take_action(&state.db, &mut conn, self.user_id, self.room_id).await?
+                && check_if_room_has_img(&state.db, img_id, self.room_id).await?,
         )
     }
 }
