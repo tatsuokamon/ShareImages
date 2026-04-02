@@ -20,7 +20,7 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(Images::Id)
                             .primary_key()
                             .uuid()
-                            .default(Expr::cust("get_random_uuid()")),
+                            .default(Expr::cust("gen_random_uuid()")),
                     )
                     .col(ColumnDef::new(Images::Title).text())
                     .col(ColumnDef::new(Images::Score).integer().not_null())
