@@ -7,17 +7,31 @@ pub struct Migration;
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         manager
+            .get_connection()
+            .execute_unprepared(r#"CREATE EXTENSION IF NOT EXISTS pgcrypto"#)
+            .await?;
+
+        manager
             .create_table(
                 Table::create()
                     .table(Comment::Table)
                     .if_not_exists()
-                    .col(ColumnDef::new(Comment::Id).uuid().primary_key())
+                    .col(
+                        ColumnDef::new(Comment::Id)
+                            .uuid()
+                            .primary_key()
+                            .default(Expr::cust("gen_random_uuid()")),
+                    )
                     .col(ColumnDef::new(Comment::RoomId).uuid().not_null())
                     .col(ColumnDef::new(Comment::UserId).uuid().not_null())
                     .col(ColumnDef::new(Comment::UserIdentifier).string().not_null())
                     .col(ColumnDef::new(Comment::Content).text().not_null())
                     .col(ColumnDef::new(Comment::DisplayName).text())
-                    .col(ColumnDef::new(Comment::CreatedAt).timestamp_with_time_zone().not_null())
+                    .col(
+                        ColumnDef::new(Comment::CreatedAt)
+                            .timestamp_with_time_zone()
+                            .not_null(),
+                    )
                     .col(ColumnDef::new(Comment::DeletedAt).timestamp_with_time_zone())
                     .foreign_key(
                         ForeignKey::create()

@@ -14,23 +14,29 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(ImageVote::ImageId).uuid().not_null())
                     .col(ColumnDef::new(ImageVote::UserId).uuid().not_null())
                     .col(ColumnDef::new(ImageVote::IsGood).boolean().not_null())
-                    .col(ColumnDef::new(ImageVote::CreatedAt).timestamp_with_time_zone().not_null())
+                    .col(
+                        ColumnDef::new(ImageVote::CreatedAt)
+                            .timestamp_with_time_zone()
+                            .not_null(),
+                    )
                     .primary_key(
                         Index::create()
                             .col(ImageVote::ImageId)
-                            .col(ImageVote::UserId)
+                            .col(ImageVote::UserId),
                     )
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-image_votes-user")
                             .from(ImageVote::Table, ImageVote::UserId)
-                            .to(User::Table, User::Id).on_delete(ForeignKeyAction::NoAction),
+                            .to(User::Table, User::Id)
+                            .on_delete(ForeignKeyAction::NoAction),
                     )
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-image_votes-image")
                             .from(ImageVote::Table, ImageVote::ImageId)
-                            .to(Images::Table, Images::Id).on_delete(ForeignKeyAction::NoAction),
+                            .to(Images::Table, Images::Id)
+                            .on_delete(ForeignKeyAction::NoAction),
                     )
                     .to_owned(),
             )
@@ -79,5 +85,5 @@ pub enum Images {
 
     CreatedAt,
     DeletedAt,
-    DisplayName
+    DisplayName,
 }

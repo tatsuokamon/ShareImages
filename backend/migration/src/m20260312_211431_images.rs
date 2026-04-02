@@ -7,14 +7,28 @@ pub struct Migration;
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         manager
+            .get_connection()
+            .execute_unprepared(r#"CREATE EXTENSION IF NOT EXISTS pgcrypto"#)
+            .await?;
+
+        manager
             .create_table(
                 Table::create()
                     .table(Images::Table)
                     .if_not_exists()
-                    .col(ColumnDef::new(Images::Id).primary_key().uuid())
+                    .col(
+                        ColumnDef::new(Images::Id)
+                            .primary_key()
+                            .uuid()
+                            .default(Expr::cust("get_random_uuid()")),
+                    )
                     .col(ColumnDef::new(Images::Title).text())
                     .col(ColumnDef::new(Images::Score).integer().not_null())
-                    .col(ColumnDef::new(Images::CreatedAt).timestamp_with_time_zone().not_null())
+                    .col(
+                        ColumnDef::new(Images::CreatedAt)
+                            .timestamp_with_time_zone()
+                            .not_null(),
+                    )
                     .col(ColumnDef::new(Images::DeletedAt).timestamp_with_time_zone())
                     .col(ColumnDef::new(Images::DisplayName).text())
                     .col(ColumnDef::new(Images::RoomId).uuid().not_null())
@@ -65,7 +79,7 @@ pub enum Images {
 
     CreatedAt,
     DeletedAt,
-    DisplayName
+    DisplayName,
 }
 
 #[derive(Iden)]
