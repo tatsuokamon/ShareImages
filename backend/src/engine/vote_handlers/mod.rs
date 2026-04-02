@@ -7,7 +7,11 @@ use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{
-    engine::{EngineErr, EngineState, auth::AuthUser, right_control::{User, AccessControl}},
+    engine::{
+        EngineErr, EngineState,
+        auth::AuthUser,
+        right_control::{AccessControl, User},
+    },
     repository::{check_if_img_vote_exists, upsert_img_vote},
     ws::broadcast,
 };

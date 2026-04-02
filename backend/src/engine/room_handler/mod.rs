@@ -3,17 +3,18 @@ use axum::{
     extract::{Query, State},
     response::IntoResponse,
 };
-use base64::{
-    Engine,
-    prelude::BASE64_URL_SAFE,
-};
+use base64::{Engine, prelude::BASE64_URL_SAFE};
 use rand::Rng;
 use sea_orm::ConnectionTrait;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::{
-    engine::{EngineErr, EngineState, JsonResponse, auth::AuthUser, right_control::{User, AccessControl}},
+    engine::{
+        EngineErr, EngineState, JsonResponse,
+        auth::AuthUser,
+        right_control::{AccessControl, User},
+    },
     repository::{
         self, check_if_he_is_authorized, check_is_keyword_available, generate_room,
         get_room_id_from_keyword,

@@ -10,6 +10,7 @@ use axum::{
 use crate::engine::EngineState;
 
 fn generate_rate_limit_tag(ip: &String) -> String {
+    tracing::error!("called generate_rate_limit_tag");
     format!("rate-limit:ip:{}", ip)
 }
 

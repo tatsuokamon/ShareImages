@@ -96,11 +96,11 @@ const post_id_to_map = (id: string, post: Post, map: Map<string, BanSrc>) => {
 	let got = map.get(post.user_identifier);
 	if (got) {
 		got.post_ids.push(id)
-		got.display_name = post.display_name ?? Config.default_name;
+		got.display_name = post.display_name ? post.display_name: Config.default_name;
 	} else {
 		let src : BanSrc = {
 			identifier: post.user_identifier,
-			display_name: post.display_name ?? Config.default_name,
+			display_name: post.display_name ? post.display_name : Config.default_name,
 			banned: false,
 			post_ids: [id]
 		}
@@ -184,7 +184,7 @@ export class BanDOMManager {
 			let default_src = {
 				identifier,
 				post_ids: [],
-				display_name: "無名",
+				display_name: Config.default_name,
 				banned: false,
 			};
 			this.component.add( updater(default_src), this.dom)
@@ -416,7 +416,8 @@ export class PostUIManager {
 	/* ---------------- payload ---------------- */
 
 	private get_comment_payload(): PostCommentPayload | null {
-		let display_name = this.get_display_name_input().value;
+		let value = this.get_display_name_input().value;
+		let display_name = value ? value : null;
 
 		let content = this.get_message_input().value;
 
@@ -440,7 +441,7 @@ export class PostUIManager {
 
 		if (!comment_payload) return null;
 
-		let presigned_resp = await this.actions.get_presigned_url();
+		let presigned_resp = await this.actions.get_presigned_url(this.file.type);
 
 		if (!presigned_resp.ok) {
 			alert("failed");

@@ -6,7 +6,11 @@ use axum::{
 use uuid::Uuid;
 
 use crate::{
-    engine::{EngineErr, EngineState, auth::AuthUser, right_control::{User, AccessControl}},
+    engine::{
+        EngineErr, EngineState,
+        auth::AuthUser,
+        right_control::{AccessControl, User},
+    },
     repository::{self, get_all_banned_users},
     ws::broadcast,
 };

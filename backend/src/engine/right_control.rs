@@ -83,10 +83,7 @@ impl User {
         check_if_he_can_take_action(&state.db, &mut conn, self.user_id, self.room_id).await
     }
 
-    pub async fn can_post_comment(
-        &self,
-        state: &EngineState,
-    ) -> Result<AccessControl, EngineErr> {
+    pub async fn can_post_comment(&self, state: &EngineState) -> Result<AccessControl, EngineErr> {
         let mut conn = state.pool.get().await?;
         if let AccessControl::Denied(s) =
             check_if_he_can_take_action(&state.db, &mut conn, self.user_id, self.room_id).await?

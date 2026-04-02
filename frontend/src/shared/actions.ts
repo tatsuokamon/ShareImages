@@ -50,11 +50,12 @@ export class Actions {
 		);
 	}
 
-	async get_presigned_url(): Promise<Response> {
+	async get_presigned_url(content_type: string): Promise<Response> {
 		return await fetch_with_token(
 			this.user.token,
 			{
 				room_id: this.room.id,
+				content_type
 			},
 			URLManager.get_presigned_url_endpoint.bind(URLManager),
 			"GET"

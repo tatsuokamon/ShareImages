@@ -7,21 +7,15 @@ import {
 import { type ImgMeta } from "../../shared/image.js";
 import { Actions } from "../../shared/actions.js";
 import {
-	create_bad_button,
-	create_comment,
-	create_display_name,
-	create_good_button,
-	create_icon,
-	create_score,
+	create_post_header,
+	create_post_body,
+
 	render_room_info,
 	room_updater,
+
 	score_to_display,
-	wrap_as_bubble,
-	wrap_as_comment,
-	wrap_as_footer,
-	wrap_as_img_card,
-	wrap_as_meta,
 	wrap_as_post,
+	put_me,
 } from "../../shared/ui_factory.js";
 import { Config } from "../../shared/config.js";
 import type { CommentMeta } from "../../shared/comment.js";
@@ -34,72 +28,23 @@ import { get_initial_posts } from "../../shared/post.js";
 import type { WsServerEvent } from "../../shared/realtime/ws_client.js";
 
 const img_creater = (src: ImgMeta, actions: Actions): HTMLElement => {
-	// meta creater
-	const meta = wrap_as_meta(
-		create_icon(src.display_name),
-		create_display_name(src.display_name)
+	// post header
+	const header = create_post_header(
+		src,
+		actions,
+		false,
+		src.user_identifier == actions.user.identifier
 	);
 
-	const title = document.createElement("div");
-	title.innerText = src.title ?? "";
+	// post body
+	const body = create_post_body(src, actions);
+	const post = wrap_as_post([header, body]);
 
-	const img_holder = document.createElement("div");
-	img_holder.className = "image-placeholder";
-	img_holder.innerText = "click and display";
+	if (actions.user.identifier == src.user_identifier) {
+		put_me(post);
+	}
 
-	img_holder.onclick = (e) => {
-		const img = document.createElement("img");
-		img.src = Config.from_obj_key_to_url(src.object_key);
-		img.dataset.id = src.id;
-		if (src.user_identifier == actions.user.identifier) {
-			img.onclick = (inner_event) => {
-				const id = (inner_event.target as HTMLElement)
-					.dataset.id;
-				if (!id) {
-					console.error("no id");
-					return;
-				}
-				actions.delete_image(id);
-			};
-		}
-
-		(e.target as HTMLElement).replaceWith(img);
-	};
-
-	const img_wrapper = wrap_as_img_card(img_holder);
-
-	const score_div = create_score();
-	score_div.innerText = score_to_display(src.score);
-
-	const like_button = create_good_button();
-	like_button.dataset.img_id = src.id;
-	like_button.onclick = (e) => {
-		let id = (e.target as HTMLElement).dataset.img_id;
-		if (!id) {
-			console.error("no id");
-			return;
-		}
-		actions.post_vote({
-			img_id: id,
-			is_good: true,
-		});
-	};
-	const dislike_button = create_bad_button();
-	dislike_button.dataset.img_id = src.id;
-	dislike_button.onclick = (e) => {
-		let id = (e.target as HTMLElement).dataset.img_id;
-		if (!id) {
-			console.error("no id");
-			return;
-		}
-		actions.post_vote({
-			img_id: id,
-			is_good: false,
-		});
-	};
-
-	const footer = wrap_as_footer([score_div, like_button, dislike_button]);
-	return wrap_as_post([meta, title, img_wrapper, footer]);
+	return post;
 };
 
 const img_updater = (el: HTMLElement, prev: ImgMeta, next: ImgMeta) => {
@@ -116,26 +61,19 @@ const img_get_id = (src: ImgMeta): string => {
 };
 
 const comment_creater = (src: CommentMeta, actions: Actions): HTMLElement => {
-	const icon = create_icon(src.display_name);
-	const display_name = create_display_name(src.display_name);
-	const content = create_comment(src.content);
+	const header = create_post_header(
+		src,
+		actions,
+		false,
+		src.user_identifier == actions.user.identifier
+	);
+	const body = create_post_body(src, actions);
 
-	let bubble = wrap_as_bubble([display_name, content]);
-	bubble.dataset.id = src.id;
+	const post = wrap_as_post([header, body]);
 	if (actions.user.identifier == src.user_identifier) {
-		bubble.onclick = (inner_event) => {
-			if (inner_event.target !== inner_event.currentTarget)
-				return;
-			const id = (inner_event.target as HTMLElement).dataset
-				.id;
-			if (!id) {
-				console.error("no id");
-				return;
-			}
-			actions.delete_comment(id);
-		};
+		put_me(post);
 	}
-	return wrap_as_post([wrap_as_comment([icon, bubble])]);
+	return post
 };
 
 const comment_updater = (
@@ -240,7 +178,10 @@ export class App {
 			this.message_manager.create_post(posts);
 
 			this.socket = new WebSocket(
-				URLManager.get_ws_endpoint(this.room.id, this.user.id)
+				URLManager.get_ws_endpoint(
+					this.room.id,
+					this.user.id
+				)
 			);
 			this.socket.onmessage = (message) => {
 				let e: WsServerEvent = JSON.parse(message.data);
@@ -251,6 +192,21 @@ export class App {
 					this.room_manager as RoomDOMManager,
 					this.room as Room
 				);
+			};
+
+			this.socket.onclose = () => {
+				alert("connection closed");
+				location.assign(Config.host);
+			};
+
+			this.socket.onerror = (e) => {
+				console.error(e);
+				if (this.socket) {
+					this.socket.close();
+				} else {
+					alert("connection closed");
+					location.assign(Config.host);
+				}
 			};
 		} catch (e) {
 			alert(e);

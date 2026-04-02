@@ -3,20 +3,24 @@
 	<head>
 		<meta charset="UTF-8" />
 
+		<link href="/styles/room.css" rel="stylesheet" />
 		<link href="/styles/admin.css" rel="stylesheet" />
-		<script type="module" src="/dist/pages/admin_room/app.js">
-			import { App } from "./app";
+		<script type="module">
+			import { App } from "/dist/pages/admin_room/app.js";
 
 			const params = new URLSearchParams(location.search);
 			const keyword = params.get("keyword");
 
 			const app = new App(keyword);
-			await app.init()
+			await app.init();
 		</script>
 	</head>
 
 	<body>
-		<div class="navbar">Share Images</div>
+		<title>ShrareImages</title>
+		<div class="navbar" onclick="() => location.assign('/')">
+			Share Images
+		</div>
 
 		<div class="room-bar" id="room-info"></div>
 

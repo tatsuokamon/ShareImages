@@ -1,9 +1,18 @@
+/* =========================
+   base
+========================= */
+
 body {
 	margin: 0;
 	font-family: system-ui, sans-serif;
 	background: #f5f6f8;
+	color: #222;
 }
-/* navbar */
+
+/* =========================
+   navbar
+========================= */
+
 .navbar {
 	position: sticky;
 	top: 0;
@@ -14,37 +23,52 @@ body {
 	letter-spacing: 0.04em;
 	padding: 18px 24px;
 	color: white;
-	z-index: 1;
+	z-index: 10;
+	cursor: pointer;
 }
-/* room info bar */
+
+/* =========================
+   room info bar
+========================= */
+
 .room-bar {
 	position: fixed;
+	top: 72px;
+	left: 0;
+	right: 0;
+
 	display: grid;
 	grid-template-columns: 1fr 1fr 1fr;
 	align-items: center;
+
 	padding: 12px 18px;
 	background: white;
 	border-bottom: 1px solid #eee;
 	font-size: 14px;
-	z-index: 1;
+	z-index: 9;
 }
+
 .room-label {
 	color: #666;
 }
+
 .room-center {
 	text-align: center;
 	color: #999;
 }
+
 .room-keyword-box {
 	display: flex;
 	justify-content: flex-end;
 	align-items: center;
 	gap: 8px;
 }
+
 .keyword-label {
 	font-size: 12px;
 	color: #888;
 }
+
 .keyword {
 	background: #4f7cff;
 	color: white;
@@ -53,151 +77,259 @@ body {
 	font-weight: 600;
 	font-size: 13px;
 }
-/* layout */
+
+/* =========================
+   layout
+========================= */
+
 .container {
 	max-width: 520px;
 	margin: auto;
-	padding: 56px 14px 140px;
+	padding: 128px 14px 220px;
+	box-sizing: border-box;
 }
-/* icon */
+
+/* =========================
+   post common
+========================= */
+
+.post {
+	display: flex;
+	flex-direction: column;
+	margin-bottom: 22px;
+
+	padding: 10px 4px;
+
+	border-bottom: 5px solid rgba(0,0,0,.04);
+}
+
+.post-header {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 6px;
+	justify-content: flex-start;
+}
+
+.post-body {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+/* 自分の投稿は右寄せ */
+.post.me .post-header {
+	justify-content: flex-end;
+}
+
+.post.me .post-body {
+	align-items: flex-end;
+}
+
+/* =========================
+   icon / name
+========================= */
+
 .icon {
+	--icon-color: #4f7cff;
+
 	width: 34px;
 	height: 34px;
 	border-radius: 50%;
+
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 14px;
-	font-weight: bold;
-	background: #4f7cff;
+
+	background: var(--icon-color);
 	color: white;
+
+	font-size: 14px;
+	font-weight: 700;
 	flex-shrink: 0;
 }
-/* post */
-.post {
-	margin-bottom: 28px;
-}
-.meta {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	margin-bottom: 6px;
-}
+
 .display-name {
 	font-size: 14px;
 	font-weight: 600;
+	color: #333;
+	line-height: 1.2;
 }
-.title {
-	font-size: 13px;
-	color: #444;
-	margin-bottom: 6px;
+
+/* =========================
+   comment
+========================= */
+
+.comment-card {
+	background: white;
+	border-radius: 14px;
+	padding: 10px 12px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+	max-width: min(360px, calc(100vw - 92px));
+	box-sizing: border-box;
 }
-/* image */
+
+.post.me .comment-card {
+	background: #eaf2ff;
+}
+
+.content {
+	font-size: 14px;
+	line-height: 1.5;
+	color: #333;
+	word-break: break-word;
+	overflow-wrap: anywhere;
+}
+
+/* =========================
+   image post
+========================= */
+
 .image-card {
 	position: relative;
 	background: white;
 	border-radius: 14px;
-	padding: 12px;
-	padding-bottom: 48px; /* ボタン分の余白 */
+	padding: 10px;
+	padding-bottom: 46px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-	z-index: 0;
+	width: min(100%, 360px);
+	box-sizing: border-box;
 }
+
+.post.me .image-card {
+	background: #eef4ff;
+}
+
+.image-title {
+	font-size: 13px;
+	color: #444;
+	font-weight: 600;
+	margin-bottom: 8px;
+	word-break: break-word;
+	overflow-wrap: anywhere;
+}
+
 .image-wrapper {
 	display: flex;
+	align-items: center;
 	justify-content: center;
-}
-.image {
-	max-width: 100%;
+	background: #f1f3f6;
 	border-radius: 10px;
+	overflow: hidden;
+	min-height: 120px;
+	max-height: 320px;
 }
-/* score + reaction row */
-.card-footer {
-	position: absolute;
-	bottom: 12px;
-	left: 12px;
-	right: 12px;
+
+.image {
+	display: block;
+	max-width: 100%;
+	max-height: 320px;
+	object-fit: contain;
+}
+
+.image-placeholder {
+	width: 100%;
+	height: 180px;
 	display: flex;
 	align-items: center;
-	justify-content: flex-end;
+	justify-content: center;
+	color: #888;
+	font-size: 13px;
+	cursor: pointer;
+	text-align: center;
+	padding: 0 12px;
+	box-sizing: border-box;
+}
+
+/* =========================
+   image footer
+========================= */
+
+.card-footer {
+	position: absolute;
+	left: 10px;
+	right: 10px;
+	bottom: 10px;
+
+	display: flex;
+	align-items: center;
 	gap: 6px;
 }
+
 .score {
+	margin-right: auto;
 	background: rgba(0, 0, 0, 0.75);
 	color: white;
 	padding: 4px 8px;
 	border-radius: 999px;
-	font-size: 13px;
-	margin-right: auto;
+	font-size: 12px;
+	line-height: 1;
 }
-/* いいね・バッドボタン */
+
 .reaction-btn {
 	display: flex;
 	align-items: center;
-	gap: 4px;
-	background: rgba(0, 0, 0, 0.6);
-	color: white;
+	justify-content: center;
+
+	min-width: 34px;
+	height: 28px;
+	padding: 0 10px;
+
 	border: none;
 	border-radius: 999px;
-	padding: 4px 10px;
-	font-size: 13px;
+
+	background: rgba(0, 0, 0, 0.55);
+	color: white;
+
 	cursor: pointer;
-	transition:
-		background 0.15s,
-		transform 0.1s;
+	font-size: 13px;
 	line-height: 1;
+	transition:
+		background 0.15s ease,
+		transform 0.12s ease;
 }
+
 .reaction-btn:hover {
-	background: rgba(0, 0, 0, 0.85);
-	transform: scale(1.07);
+	background: rgba(0, 0, 0, 0.8);
+	transform: translateY(-1px);
 }
+
 .reaction-btn.liked {
 	background: #4f7cff;
 }
+
 .reaction-btn.disliked {
 	background: #e84646;
 }
-.reaction-btn .emoji {
-	font-size: 14px;
+
+.reaction-btn.liked {
+
+	background: #4f7cff;
+
+	box-shadow: 0 0 0 1px rgba(79,124,255,.35);
 }
-.reaction-btn .count {
-	font-size: 12px;
-	font-weight: 600;
+
+.reaction-btn.disliked {
+
+	background: #e84646;
+
+	box-shadow: 0 0 0 1px rgba(232,70,70,.35);
 }
-/* comments */
-.comment {
-	display: flex;
-	gap: 10px;
-	margin-top: 10px;
-}
-.comment.me {
-	flex-direction: row-reverse;
-}
-.bubble {
-	background: #f1f1f1;
-	border-radius: 14px;
-	padding: 8px 12px;
-	max-width: 300px;
-}
-.comment.me .bubble {
-	background: #d2f8d2;
-}
-.comment .display-name {
-	font-size: 12px;
-	color: #666;
-}
-.content {
-	font-size: 14px;
-}
-/* bottom UI wrapper */
+
+/* =========================
+   bottom ui
+========================= */
+
 .bottom-ui-wrapper {
 	position: fixed;
-	bottom: 0;
 	left: 0;
 	right: 0;
+	bottom: 0;
 	background: #f5f6f8;
 	padding: 12px 0 18px;
+	z-index: 8;
 }
-/* 中央寄せ container */
+
 .bottom-ui {
 	max-width: 520px;
 	margin: auto;
@@ -205,8 +337,13 @@ body {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
+	box-sizing: border-box;
 }
-/* 名前入力 */
+
+/* =========================
+   name input
+========================= */
+
 .name-input {
 	width: 160px;
 	padding: 6px 10px;
@@ -216,7 +353,11 @@ body {
 	background: white;
 	box-sizing: border-box;
 }
-/* LINE風入力バー */
+
+/* =========================
+   message bar
+========================= */
+
 .message-bar {
 	display: flex;
 	align-items: center;
@@ -226,16 +367,21 @@ body {
 	padding: 6px 8px;
 	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
-/* テキスト入力 */
+
 .message-input {
 	flex: 1;
 	border: none;
 	outline: none;
 	font-size: 14px;
 	padding: 6px;
-	line-height: 1;
+	background: transparent;
+	min-width: 0;
 }
-/* ファイルボタン */
+
+/* =========================
+   file / send button
+========================= */
+
 .file-btn {
 	width: 36px;
 	height: 36px;
@@ -248,8 +394,9 @@ body {
 	font-size: 20px;
 	line-height: 1;
 	flex-shrink: 0;
+	user-select: none;
 }
-/* 送信ボタン */
+
 .send-btn {
 	width: 36px;
 	height: 36px;
@@ -265,12 +412,15 @@ body {
 	line-height: 1;
 	flex-shrink: 0;
 }
-/* hidden file input */
+
 .file-input {
 	display: none;
 }
 
-/* upload preview */
+/* =========================
+   upload preview
+========================= */
+
 .upload-preview {
 	display: flex;
 	align-items: center;
@@ -278,32 +428,36 @@ body {
 	background: white;
 	border-radius: 12px;
 	padding: 6px 10px;
-	box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+	min-height: 54px;
+	box-sizing: border-box;
 }
 
 .upload-preview.hidden {
 	display: none;
 }
 
-/* サムネイル */
 .preview-img {
 	width: 40px;
 	height: 40px;
 	object-fit: cover;
 	border-radius: 8px;
+	flex-shrink: 0;
 }
 
-/* タイトル */
 .preview-meta {
 	flex: 1;
+	min-width: 0;
 	font-size: 13px;
 	color: #444;
+}
+
+.preview-title {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-/* cancelボタン */
 .preview-cancel {
 	width: 24px;
 	height: 24px;
@@ -312,13 +466,229 @@ body {
 	background: #eee;
 	cursor: pointer;
 	font-size: 14px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	line-height: 1;
+	flex-shrink: 0;
 }
 
 .preview-cancel:hover {
 	background: #e84646;
 	color: white;
+}
+
+/* =========================
+   utility
+========================= */
+
+.hidden {
+	display: none !important;
+}
+
+/* =========================
+   responsive
+========================= */
+
+@media (max-width: 640px) {
+	.navbar {
+		font-size: 24px;
+		padding: 16px 18px;
+	}
+
+	.room-bar {
+		top: 64px;
+		padding: 10px 12px;
+		font-size: 13px;
+	}
+
+	.container {
+		padding: 116px 10px 220px;
+	}
+
+	.comment-card,
+	.image-card {
+		width: min(100%, 100%);
+		max-width: calc(100vw - 34px);
+	}
+
+	.name-input {
+		width: 140px;
+	}
+}
+/* =============================
+   reaction button states
+============================= */
+
+.reaction-btn {
+
+	position: relative;
+
+	border: none;
+
+	border-radius: 999px;
+
+	background: rgba(0,0,0,.55);
+
+	color: white;
+
+	cursor: pointer;
+
+	padding: 3px 11px;
+
+	font-size: 13px;
+
+	display: flex;
+
+	align-items: center;
+
+	justify-content: center;
+
+	gap: 4px;
+
+	min-width: 36px;
+
+	transition:
+		transform .08s ease,
+		background .15s ease,
+		box-shadow .15s ease;
+}
+
+
+/* hover */
+
+.reaction-btn:hover {
+
+	background: rgba(0,0,0,.8);
+
+	transform: translateY(-1px);
+}
+
+
+/* clickしている瞬間 */
+
+.reaction-btn:active {
+
+	transform: scale(.93);
+
+	box-shadow: inset 0 2px 4px rgba(0,0,0,.35);
+}
+
+
+/* 選択状態 */
+
+.reaction-btn.liked {
+
+	background: #4f7cff;
+
+	box-shadow: 0 0 0 1px rgba(79,124,255,.35);
+}
+
+.reaction-btn.disliked {
+
+	background: #e84646;
+
+	box-shadow: 0 0 0 1px rgba(232,70,70,.35);
+}
+
+
+/* hover時（選択済） */
+
+.reaction-btn.liked:hover {
+
+	background: #3e67e0;
+}
+
+.reaction-btn.disliked:hover {
+
+	background: #d93a3a;
+}
+
+
+/* 押せない状態 */
+
+.reaction-btn.disabled {
+
+	opacity: .55;
+
+	cursor: default;
+
+	transform: none;
+}
+
+
+/* カウント表示を使う場合 */
+
+.reaction-btn .count {
+
+	font-size: 12px;
+
+	font-weight: 600;
+}
+
+
+/* =============================
+   自分の投稿
+============================= */
+
+.post.me .reaction-btn {
+
+	background: rgba(0,0,0,.45);
+}
+
+.post.me .reaction-btn:hover {
+
+	background: rgba(0,0,0,.7);
+}
+
+
+/* =============================
+   subtle feedback animation
+============================= */
+
+.reaction-btn.pop {
+
+	animation: reaction-pop .18s ease;
+}
+
+/* admin投稿は削除ボタンを持てる */
+.delete-btn {
+    width: 18px;
+    height: 18px;
+    border: none;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.58);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.delete-btn:hover {
+	background: #e84646;
+}
+
+/* 自分のpostのrow-reverseでも削除ボタンが右端に残るよう調整したい場合はこれを使う
+.post.me .delete-btn {
+	margin-left: 0;
+	margin-right: auto;
+}
+*/
+
+@keyframes reaction-pop {
+
+	0% {
+
+		transform: scale(.85);
+	}
+
+	60% {
+
+		transform: scale(1.08);
+	}
+
+	100% {
+
+		transform: scale(1);
+	}
 }

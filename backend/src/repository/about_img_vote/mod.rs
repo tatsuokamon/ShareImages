@@ -7,7 +7,7 @@ use sea_orm::{
 use uuid::Uuid;
 
 use crate::{
-    entity::{image_vote, images, room},
+    entity::{image_vote, images},
     repository::RepositoryErr,
 };
 
@@ -19,7 +19,7 @@ pub async fn check_if_img_vote_exists(
     Ok(image_vote::Entity::find()
         .join(
             sea_orm::JoinType::InnerJoin,
-            image_vote::Relation::Images.def().rev(),
+            image_vote::Relation::Images.def(),
         )
         .filter(images::Column::DeletedAt.is_null())
         .filter(image_vote::Column::UserId.eq(user_id))
@@ -35,7 +35,7 @@ pub async fn upsert_img_vote(
     img_id: Uuid,
     is_good: bool,
 ) -> Result<(), RepositoryErr> {
-    match model {
+    let (is_new, is_changed) = match model {
         None => {
             image_vote::ActiveModel {
                 image_id: sea_orm::ActiveValue::Set(img_id),
@@ -45,12 +45,30 @@ pub async fn upsert_img_vote(
             }
             .insert(db)
             .await?;
+            (true, true)
         }
+
         Some(m) => {
             let mut active_model: image_vote::ActiveModel = m.into();
             active_model.is_good = sea_orm::ActiveValue::Set(is_good);
             active_model.created_at = sea_orm::ActiveValue::Set(chrono::Utc::now());
 
+            let m = active_model.update(db).await?;
+            (false, m.is_good == is_good)
+        }
+    };
+    if is_changed {
+        if let Some(model) = images::Entity::find()
+            .filter(images::Column::Id.eq(img_id))
+            .one(db)
+            .await?
+        {
+            let mut active_model: images::ActiveModel = model.into();
+            let multiply = if is_new { 1 } else { 2 };
+            let raw_score_diff = if is_good { 1 } else { -1 };
+
+            let score_diff = multiply * raw_score_diff;
+            active_model.score = sea_orm::ActiveValue::Set(active_model.score.unwrap() + score_diff);
             active_model.update(db).await?;
         }
     }

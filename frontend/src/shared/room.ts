@@ -10,6 +10,7 @@ type GetRoomResult = {
 	room_id: string | null;
 	success: boolean;
 	how_many: number;
+	as_master: boolean;
 };
 
 type GetBanUserResult = {
@@ -22,6 +23,7 @@ export class Room {
 	keyword = "";
 	how_many = 0;
 	banned_users = [] as string[];
+	as_master: boolean = false;
 
 	constructor(keyword: string) {
 		this.keyword = keyword;
@@ -48,6 +50,7 @@ export class Room {
 
 				this.id = result.room_id;
 				this.how_many = result.how_many;
+				this.as_master = result.as_master;
 			})
 			.then(async (_) => {
 				let get_ban_q: GetBanQuery = {

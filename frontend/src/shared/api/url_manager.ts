@@ -47,7 +47,7 @@ export class URLManager {
 	static get_presigned_url_endpoint = (
 		q: GetPresignedURLQuery
 	): string => {
-		return `${this.presigned_url_endpoint()}?room_id=${q.room_id}`;
+		return `${this.presigned_url_endpoint()}?room_id=${q.room_id}&content_type=${q.content_type}`;
 	};
 
 	static image_endpoint = (): string => {
@@ -136,6 +136,7 @@ export type DeleteRoomQuery = {
 // about get presigned url
 export type GetPresignedURLQuery = {
 	room_id: string;
+	content_type: string;
 };
 
 // about comment

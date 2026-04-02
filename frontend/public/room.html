@@ -9,11 +9,15 @@
 			const keyword = params.get("keyword");
 
 			const app = new App(keyword);
-			await app.init()
+			await app.init();
 		</script>
 	</head>
 	<body>
-		<div class="navbar">Share Images</div>
+		<title>ShrareImages</title>
+		<div class="navbar" onclick="() => {location.assign('/')}">
+			Share Images
+		</div>
+		<title>ShrareImages</title>
 		<div class="room-bar" id="room-info"></div>
 		<div class="container" id="message"></div>
 		<div class="bottom-ui-wrapper">

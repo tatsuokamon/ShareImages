@@ -8,21 +8,13 @@ import type { WsServerEvent } from "../../shared/realtime/ws_client.js";
 import { master_event_handler } from "../../shared/realtime/ws_handler.js";
 import { Room } from "../../shared/room.js";
 import {
-	create_bad_button,
-	create_comment,
-	create_display_name,
-	create_good_button,
-	create_icon,
-	create_score,
 	render_room_info,
 	room_updater,
 	score_to_display,
-	wrap_as_bubble,
-	wrap_as_comment,
-	wrap_as_footer,
-	wrap_as_img_card,
-	wrap_as_meta,
 	wrap_as_post,
+	create_post_header,
+	create_post_body,
+	put_me
 } from "../../shared/ui_factory.js";
 import {
 	RoomDOMManager,
@@ -36,76 +28,19 @@ import {
 import { User } from "../../shared/user.js";
 
 const img_creater = (src: ImgMeta, actions: Actions): HTMLElement => {
-	let icon = create_icon(src.display_name);
-	icon.dataset.identifier = src.user_identifier;
-	icon.onclick = (e) => {
-		let identifier = (e.target as HTMLElement).dataset.identifier;
-		if (identifier) {
-			if (
-				identifier !== actions.user.identifier &&
-				confirm("BAN HIM?")
-			)
-				actions.post_ban(identifier);
-		}
-	};
-	const meta = wrap_as_meta(icon, create_display_name(src.display_name));
-	const img_holder = document.createElement("div");
-	img_holder.className = "image-placeholder";
-	img_holder.innerText = "click and display";
+	const header = create_post_header(
+		src,
+		actions,
+		true,
+		true
+	);
+	const body = create_post_body(src, actions);
 
-	img_holder.onclick = (e) => {
-		const img = document.createElement("img");
-		img.src = Config.from_obj_key_to_url(src.object_key);
-		img.dataset.id = src.id;
-		img.onclick = (inner_event) => {
-			const id = (inner_event.target as HTMLElement).dataset
-				.id;
-			if (!id) {
-				console.error("no id");
-				return;
-			}
-			actions.delete_image(id);
-		};
-
-		(e.target as HTMLElement).replaceWith(img);
-	};
-
-	const img_wrapper = wrap_as_img_card(img_holder);
-
-	const score_div = create_score();
-	score_div.innerText = score_to_display(src.score);
-
-	const like_button = create_good_button();
-	like_button.dataset.img_id = src.id;
-	like_button.onclick = (e) => {
-		let id = (e.target as HTMLElement).dataset.img_id;
-		if (!id) {
-			console.error("no id");
-			return;
-		}
-		actions.post_vote({
-			img_id: id,
-			is_good: true,
-		});
-	};
-	const dislike_button = create_bad_button();
-	dislike_button.dataset.img_id = src.id;
-	dislike_button.onclick = (e) => {
-		let id = (e.target as HTMLElement).dataset.img_id;
-		if (!id) {
-			console.error("no id");
-			return;
-		}
-		actions.post_vote({
-			img_id: id,
-			is_good: false,
-		});
-	};
-
-	const title = document.createElement("div");
-	title.innerText = src.title ?? "";
-	const footer = wrap_as_footer([score_div, like_button, dislike_button]);
-	return wrap_as_post([meta, title, img_wrapper, footer]);
+	const post = wrap_as_post([header, body]);
+	if (actions.user.identifier == src.user_identifier) {
+		put_me(post);
+	}
+	return post;
 };
 
 const img_updater = (el: HTMLElement, prev: ImgMeta, next: ImgMeta) => {
@@ -122,37 +57,19 @@ const img_get_id = (src: ImgMeta): string => {
 };
 
 const comment_creater = (src: CommentMeta, actions: Actions): HTMLElement => {
-	const icon = create_icon(src.display_name);
-	icon.dataset.identifier = src.user_identifier;
-	icon.onclick = (e) => {
-		let identifier = (e.target as HTMLElement).dataset.identifier;
-		if (identifier) {
-			if (
-				identifier !== actions.user.identifier &&
-				confirm("BAN HIM?")
-			)
-				actions.post_ban(identifier);
-		}
-	};
-	const display_name = create_display_name(src.display_name);
-	const content = create_comment(src.content);
+	const header = create_post_header(
+		src,
+		actions,
+		true,
+		src.user_identifier == actions.user.identifier
+	);
+	const body = create_post_body(src, actions);
 
-	let bubble = wrap_as_bubble([display_name, content]);
-	bubble.dataset.id = src.id;
+	const post = wrap_as_post([header, body]);
 	if (actions.user.identifier == src.user_identifier) {
-		bubble.onclick = (inner_event) => {
-			if (inner_event.target !== inner_event.currentTarget)
-				return;
-			const id = (inner_event.target as HTMLElement).dataset
-				.id;
-			if (!id) {
-				console.error("no id");
-				return;
-			}
-			actions.delete_comment(id);
-		};
+		put_me(post);
 	}
-	return wrap_as_post([wrap_as_comment([icon, bubble])]);
+	return post
 };
 
 const comment_updater = (
@@ -305,6 +222,12 @@ export class App {
 			await this.user.init();
 			this.room = new Room(this.keyword);
 			await this.room.init(this.user as User);
+
+			// check if he is authorized
+			if (!this.room.as_master) {
+				location.assign(Config.room_endpoint(this.keyword));
+			}
+
 			this.actions = new Actions(this.user, this.room);
 			const message_dom = document.getElementById(
 				`${Config.messages_dom_id}`
@@ -400,7 +323,10 @@ export class App {
 				});
 			});
 			this.socket = new WebSocket(
-				URLManager.get_ws_endpoint(this.room.id, this.user.id)
+				URLManager.get_ws_endpoint(
+					this.room.id,
+					this.user.id
+				)
 			);
 
 			this.socket.onmessage = (message) => {
@@ -414,6 +340,20 @@ export class App {
 					this.room as Room
 				);
 			};
+			this.socket.onclose = () => {
+				alert("connection closed");
+				location.assign(Config.host);
+			}
+
+			this.socket.onerror = (e) => {
+				console.error(e);
+				if (this.socket) {
+					this.socket.close();
+				} else {
+					alert("connection closed");
+					location.assign(Config.host);
+				}
+			}
 		} catch (e) {
 			alert(e);
 		}
