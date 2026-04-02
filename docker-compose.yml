@@ -14,7 +14,7 @@ services:
       POSTGRES_DB: share_imgs
 
     ports:
-      - "5432:5432"
+      - "1236:5432"
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -41,22 +41,7 @@ services:
     command: ["./migration", "up"]
 
     environment:
-
       DATABASE_URL: postgres://share_imgs:share_imgs_pass@postgres/share_imgs
-
-      REDIS_URL: redis://redis:6379
-
-      REDIS_POOL_SIZE: 10
-      REDIS_CONNECTION_TIMEOUT: 30
-
-      POST_IMG_TIMEOUT: 5
-      POST_COMMENT_TIMEOUT: 5
-      BAN_TIMEOUT: 604800
-
-      REQUEST_PER_MINUTE: 20
-
-      PUBLIC_PATH: "./public"
-
 
 ########################################
 # redis
@@ -67,7 +52,7 @@ services:
     container_name: share_imgs_redis
 
     ports:
-      - "6379:6379"
+      - "1235:6379"
 
     volumes:
       - redis_data:/data
@@ -90,7 +75,9 @@ services:
         condition: service_started
 
     ports:
-      - "8080:80"
+      - "5000:80"
+    command:
+      ["./backend"]
 
     environment:
 

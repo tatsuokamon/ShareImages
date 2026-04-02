@@ -5,3 +5,4 @@ backend/migration/target/
 backend/public
 backend/.env
 frontend/public/dist
+.env

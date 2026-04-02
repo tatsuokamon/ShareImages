@@ -78,5 +78,3 @@ COPY --from=frontend-builder \
 #########################
 
 EXPOSE 80
-
-CMD ["./backend"]
