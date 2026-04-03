@@ -2,8 +2,11 @@ use std::sync::Arc;
 
 use axum::{
     Json, Router,
+    extract::{ConnectInfo, Request, State},
     http::StatusCode,
     middleware,
+    middleware::Next,
+    response::Response,
     routing::{self, get_service},
 };
 use bb8::{Pool, RunError};
@@ -17,8 +20,10 @@ use uuid::Uuid;
 
 use crate::{
     engine::{
-        get_posted_comment::get_posted_comment, get_posted_img::get_posted_img,
-        rate_limit::rate_limit_middleware, ws_handler::ws_handler,
+        get_posted_comment::get_posted_comment,
+        get_posted_img::get_posted_img,
+        rate_limit::{rate_limit_middleware_with_proxy, rate_limit_middleware_without_proxy},
+        ws_handler::ws_handler,
     },
     repository::RepositoryErr,
     ws::WsManager,
@@ -63,7 +68,12 @@ fn generate_user_identifier(user_id: Uuid) -> String {
     format!("user-{:x}", sha2::Sha256::digest(user_id.as_bytes()))
 }
 
-pub fn generate_router(state: EngineState, public_path: &str) -> Router {
+pub struct RouterConfig<'a> {
+    pub public_path: &'a str,
+    pub with_proxy: bool,
+}
+
+pub fn generate_router(state: EngineState, config: RouterConfig) -> Router {
     let api_router = Router::new()
         // about user
         .route("/new_user_id", axum::routing::get(get_user_id::get_user_id))
@@ -99,14 +109,25 @@ pub fn generate_router(state: EngineState, public_path: &str) -> Router {
         )
         .route("/posted_comment", axum::routing::get(get_posted_comment))
         // about ws
-        .route("/ws", axum::routing::get(ws_handler))
-        .layer(middleware::from_fn_with_state(
-            state.clone(),
-            rate_limit_middleware,
-        ))
-        .with_state(state);
+        .route("/ws", axum::routing::get(ws_handler));
 
-    let frontend_service = get_service(ServeDir::new(public_path)).handle_error(|_| async {
+    let api_router = if config.with_proxy {
+        api_router
+            .layer(middleware::from_fn_with_state(
+                state.clone(),
+                rate_limit_middleware_with_proxy,
+            ))
+            .with_state(state)
+    } else {
+        api_router
+            .layer(middleware::from_fn_with_state(
+                state.clone(),
+                rate_limit_middleware_without_proxy,
+            ))
+            .with_state(state)
+    };
+
+    let frontend_service = get_service(ServeDir::new(config.public_path)).handle_error(|_| async {
         tracing::error!("handle error");
         StatusCode::INTERNAL_SERVER_ERROR
     });

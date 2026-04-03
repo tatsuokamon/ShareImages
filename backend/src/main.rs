@@ -6,7 +6,7 @@ use bb8_redis::RedisConnectionManager;
 use sea_orm::Database;
 
 use crate::{
-    engine::{EngineStateSrc, generate_router},
+    engine::{EngineStateSrc, generate_router, RouterConfig},
     ws::WsManager,
 };
 
@@ -34,6 +34,8 @@ macro_rules! get_env_with_parsing {
 
 #[tokio::main]
 async fn main() {
+    dotenv::dotenv();
+
     tracing_subscriber::fmt()
         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
         .init();
@@ -80,7 +82,12 @@ async fn main() {
         req_per_minute: get_env_with_parsing!("REQUEST_PER_MINUTE", usize),
     });
 
-    let router = generate_router(state, &get_env!("PUBLIC_PATH"));
+    let router_config = RouterConfig {
+        public_path: &get_env!("PUBLIC_PATH"),
+        with_proxy: get_env_with_parsing!("USE_PROXY", bool),
+    };
+
+    let router = generate_router(state, router_config);
     let listener = tokio::net::TcpListener::bind(get_env!("EXPOSED_URL"))
         .await
         .expect("failed to bind TcpListener");

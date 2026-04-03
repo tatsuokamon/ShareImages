@@ -16,8 +16,8 @@ services:
     ports:
       - "1236:5432"
 
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+        # volumes:
+        # - postgres_data:/var/lib/postgresql/data
 
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U share_imgs"]
@@ -80,6 +80,7 @@ services:
       ["./backend"]
 
     environment:
+      RUST_LOG: "trace"
 
       #################################
       # DB

@@ -68,7 +68,8 @@ pub async fn upsert_img_vote(
             let raw_score_diff = if is_good { 1 } else { -1 };
 
             let score_diff = multiply * raw_score_diff;
-            active_model.score = sea_orm::ActiveValue::Set(active_model.score.unwrap() + score_diff);
+            active_model.score =
+                sea_orm::ActiveValue::Set(active_model.score.unwrap() + score_diff);
             active_model.update(db).await?;
         }
     }

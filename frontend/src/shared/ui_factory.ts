@@ -3,10 +3,11 @@ import { Config } from "./config.js";
 import { type ImgMeta } from "./image.js";
 import { Actions } from "./actions.js";
 import { type Post } from "./post.js";
+import { fetchPreview } from "./oembed/get_endpoint_url.js";
 
 export const create_icon = (
 	display_name: string | null,
-	identifier: string,
+	identifier: string
 ) => {
 	const icon = document.createElement("div");
 	icon.className = "icon";
@@ -52,7 +53,7 @@ export const create_good_button = (
 	button.classList.add("like");
 
 	button.dataset.id = src.id;
-	button.innerText = "(・∀・)ｲｲﾈ!!"
+	button.innerText = "(・∀・)ｲｲﾈ!!";
 	button.onclick = (e) => {
 		let target = e.target;
 		if (target) {
@@ -92,7 +93,7 @@ export const create_bad_button = (
 	button.classList.add("dislike");
 
 	button.dataset.id = src.id;
-	button.innerText = "('ω'乂)"
+	button.innerText = "('ω'乂)";
 	button.onclick = (e) => {
 		let target = e.target;
 		if (target) {
@@ -163,12 +164,13 @@ export const create_post_header = (
 		icon.onclick = (e) => {
 			let target = e.target;
 			if (target) {
-				let identifier = (target as HTMLElement).dataset.identifier;
+				let identifier = (target as HTMLElement).dataset
+					.identifier;
 				if (identifier) {
 					actions.post_ban(identifier);
 				}
 			}
-		}
+		};
 	}
 	div.appendChild(icon);
 	div.appendChild(create_display_name(src.display_name));
@@ -192,7 +194,7 @@ export const create_post_header = (
 				}
 			}
 		};
-		div.appendChild(button)
+		div.appendChild(button);
 	}
 	return div;
 };
@@ -303,16 +305,16 @@ const color_from_identifier = (identifier: string): string => {
 	return `hsl(${hue} 70% 55%)`;
 };
 
-export const create_post_body = (
-	src: Post,
-	actions: Actions,
-): HTMLElement => {
-
-	if ("object_key" in src ){
+export const create_post_body = (src: Post, actions: Actions): HTMLElement => {
+	// check if it is image
+	if ("object_key" in src) {
 		const title = create_img_title(src.title);
 
 		const img_holder = create_img_placeholder(src);
-		const img_wrapper = wrap_as([img_holder], e => e.className = "image-wrapper");
+		const img_wrapper = wrap_as(
+			[img_holder],
+			(e) => (e.className = "image-wrapper")
+		);
 
 		const score_div = create_score();
 		score_div.innerText = score_to_display(src.score);
@@ -320,16 +322,99 @@ export const create_post_body = (
 		const like_button = create_good_button(src, actions);
 		const dislike_button = create_bad_button(src, actions);
 
-		const footer = wrap_as_footer([score_div, like_button, dislike_button]);
+		const footer = wrap_as_footer([
+			score_div,
+			like_button,
+			dislike_button,
+		]);
 		const img_card = wrap_as_img_card([title, img_wrapper, footer]);
 
 		const body = wrap_as_post_body([img_card]);
 		return body;
 	} else {
-		const content = create_comment(src.content);
-		let comment_card = wrap_as_comment_card([ content ]);
-		const body = wrap_as_post_body([comment_card])
+		const content = linkifyAmazon(src.content);
+		let comment_card = wrap_as_comment_card([content]);
+		const body = wrap_as_post_body([comment_card]);
+
+		// operate youtube, X oembed
+		const match = src.content.match(/https?:\/\/[^\s]+/);
+		if (match?.[0]) {
+			// check amazon
+			let url = match?.[0];
+			fetchPreview(url).then((res) => {
+				if (res && res.html) {
+					body.innerHTML = res.html;
+				}
+			});
+		}
 
 		return body;
 	}
 };
+
+function normalizeAmazonUrl(url: string) {
+	// ASIN 抽出
+	const asinMatch = url.match(/(?:dp|gp\/product)\/([A-Z0-9]{10})/);
+
+	if (!asinMatch) return null;
+
+	const asin = asinMatch[1];
+
+	const cleanUrl = `https://www.amazon.co.jp/dp/${asin}`;
+
+	const affiliateUrl = `${cleanUrl}?tag=${Config.amazon_tag}`;
+
+	return {
+		displayUrl: cleanUrl,
+		affiliateUrl,
+	};
+}
+
+/**
+ * テキスト中の Amazon URL を検出して
+ * <a> に置き換える
+ */
+function linkifyAmazon(text: string) {
+	const urlRegex = /https?:\/\/[^\s]+/g;
+
+	const container = document.createElement("span");
+
+	let lastIndex = 0;
+
+	for (const match of text.matchAll(urlRegex)) {
+		const url = match[0];
+
+		const start = match.index ?? 0;
+
+		// URL前のテキスト
+		container.appendChild(
+			document.createTextNode(text.slice(lastIndex, start))
+		);
+
+		const normalized = normalizeAmazonUrl(url);
+
+		if (normalized) {
+			const a = document.createElement("a");
+
+			a.href = normalized.affiliateUrl;
+
+			a.innerText = normalized.displayUrl;
+
+			a.target = "_blank";
+
+			a.rel = "noopener noreferrer";
+
+			container.appendChild(a);
+		} else {
+			// Amazon以外はそのまま
+			container.appendChild(document.createTextNode(url));
+		}
+
+		lastIndex = start + url.length;
+	}
+
+	// 残りのテキスト
+	container.appendChild(document.createTextNode(text.slice(lastIndex)));
+
+	return container;
+}
