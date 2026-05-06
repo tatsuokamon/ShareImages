@@ -6,7 +6,7 @@ use bb8_redis::RedisConnectionManager;
 use sea_orm::Database;
 
 use crate::{
-    engine::{EngineStateSrc, generate_router, RouterConfig},
+    engine::{EngineState, RouterConfig, generate_router},
     ws::WsManager,
 };
 
@@ -68,11 +68,11 @@ async fn main() {
         .await
         .expect("failed to create redis pool");
 
-    let state = Arc::new(EngineStateSrc {
+    let state = EngineState {
         db,
         sdk_client,
         pool,
-        manager: WsManager::new(),
+        manager: Arc::new(WsManager::new()),
         bucket_name: get_env!("BUCKET_NAME"),
 
         expires_in: get_env_with_parsing!("EXPIRES_IN", u64),
@@ -80,7 +80,7 @@ async fn main() {
         post_comment_timeout: get_env_with_parsing!("POST_COMMENT_TIMEOUT", usize),
         secret: get_env!("SECRET").as_bytes().to_vec(),
         req_per_minute: get_env_with_parsing!("REQUEST_PER_MINUTE", usize),
-    });
+    };
 
     let router_config = RouterConfig {
         public_path: &get_env!("PUBLIC_PATH"),

@@ -92,6 +92,7 @@ pub struct GetRoomResult {
     pub how_many: usize,
     pub success: bool,
     pub as_master: bool,
+    pub members: Vec<String>,
 }
 
 async fn get_room_inner(
@@ -102,17 +103,18 @@ async fn get_room_inner(
     Ok(
         if let Some(room_id) = get_room_id_from_keyword(&state.db, &q.keyword).await? {
             let as_master = check_if_he_is_authorized(&state.db, auth.user_id, room_id).await?;
+            let members = if let Some(room) = state.manager.rooms.get(&room_id) {
+                room.iter().map(|r| r.key().clone()).collect()
+            } else {
+                vec![]
+            };
             (
                 axum::http::StatusCode::OK,
                 Json(GetRoomResult {
                     room_id: Some(room_id),
                     success: true,
-                    how_many: state
-                        .manager
-                        .rooms
-                        .get(&room_id)
-                        .map(|r| r.len())
-                        .unwrap_or(0),
+                    how_many:  members.len(),
+                    members,
                     as_master,
                 }),
             )
@@ -125,6 +127,7 @@ async fn get_room_inner(
                     how_many: 0,
                     success: false,
                     as_master: false,
+                    members: vec![]
                 }),
             )
         },
@@ -147,6 +150,7 @@ pub async fn get_room(
                     how_many: 0,
                     success: false,
                     as_master: false,
+                    members: vec![]
                 }),
             )
         }

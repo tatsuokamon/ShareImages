@@ -49,11 +49,14 @@ mod ws_handler;
 
 type JsonResponse<Response: Serialize> = (axum::http::StatusCode, Json<Response>);
 
-pub struct EngineStateSrc {
+#[derive(Clone)]
+pub struct EngineState {
     pub db: DatabaseConnection,
     pub sdk_client: aws_sdk_s3::Client,
     pub pool: Pool<RedisConnectionManager>,
-    pub manager: WsManager,
+
+    pub manager: Arc<WsManager>,
+
     pub bucket_name: String,
     pub expires_in: u64,
     pub post_img_timeout: usize,
@@ -61,8 +64,6 @@ pub struct EngineStateSrc {
     pub secret: Vec<u8>,
     pub req_per_minute: usize,
 }
-
-pub type EngineState = Arc<EngineStateSrc>;
 
 fn generate_user_identifier(user_id: Uuid) -> String {
     format!("user-{:x}", sha2::Sha256::digest(user_id.as_bytes()))
